@@ -1,0 +1,131 @@
+import { defineStore } from "pinia";
+import { ref, computed } from 'vue'
+import { fetchTags, fetchCollectionTags, fetchCollections, fetchCollectionById } from "../api/api";
+export const useCollectionStore = defineStore('collection', () => {
+  const tags = ref([]);
+  const colTags = ref([]);
+  const collections = ref([]);
+  const collectionMap = ref({});
+  function setIdName(id, name){
+    collectionMap.value[id] = name;
+  }
+  function getColName(id){
+    return collectionMap[id];
+  }
+
+  const collectionsIds = computed(() => collections.value.map((col) => col._id));
+
+  const queryConditional = ref('$or');
+
+  async function store_fetchCollectionById(id){
+    try{
+      const response = await fetchCollectionById(id);
+      return response.name;
+    }catch(err){
+      console.error(err);
+    }
+  }
+
+  async function store_fetchTags(){
+    try{
+      const response = await fetchTags();
+      tags.value = response;
+    }catch(err){
+      console.error('error getting tags', err);
+    }
+  }
+
+  async function store_fetchCollectionTags(q){
+    try{
+      const response = await fetchCollectionTags(q);
+      colTags.value = response;
+    }catch(err){
+      console.error('error getting collection tags', err);
+    }
+  }
+
+  async function store_fetchCollections(){ 
+    try{
+      const response = await fetchCollections();
+      collections.value = response;
+    }catch(err){
+      console.error(err);
+    }
+  }
+
+
+  //study view
+  const selectedFilters = ref({
+    collections: [],
+    tags: []
+  });
+  const selectedCollections = computed(() => new Set(selectedFilters.value.collections));
+  const selectedTags = computed(() => new Set(selectedFilters.value.tags));
+  const somethingSelected = computed(() => selectedFilters.value.collections.length > 0 ||                                           selectedFilters.value.tags.length > 0);
+  const tagOrColExists = computed(() => tags.value.length > 0 || collections.value.length > 0);
+  const tagAndColExists = computed(() => tags.value.length > 0 && collections.value.length > 0);
+
+  function selectAllCollections(){
+    selectedFilters.value.collections = [...collectionsIds.value];
+  }
+  function selectAllTags(){
+    selectedFilters.value.tags = [...tags.value];
+  }
+  function deselectAll(name){
+    selectedFilters.value[name] = [];
+  }
+  function setInitialSelected(colKeys, tags){
+    selectedFilters.value.collections = colKeys;
+    selectedFilters.value.tags = tags;
+  }
+
+  function sortCollections(colsWithCards){
+    collections.value.sort((a,b) => {
+      if(colsWithCards.has(a._id)){
+        return -1;
+      }
+      if(colsWithCards.has(b._id)){
+        return 1;
+      }
+      return 0;
+    })
+  }
+  function sortTags(tagsWithCards){
+    tags.value.sort((a,b) => {
+      if(tagsWithCards.has(a)){
+        return -1;
+      }
+      if(tagsWithCards.has(b)){
+        return 1;
+      }
+      return 0;
+    })
+  }
+
+  return {
+    tags,
+    collections, 
+    colTags,
+    selectedFilters,
+    queryConditional,
+    somethingSelected,
+    tagOrColExists,
+    tagAndColExists,
+    collectionMap,
+    selectedCollections,
+    selectedTags,
+
+    setIdName,
+    getColName,
+    store_fetchTags, 
+    store_fetchCollectionTags,
+    store_fetchCollections,
+    store_fetchCollectionById,
+    selectAllCollections,
+    selectAllTags,
+    deselectAll,
+    sortCollections,
+    sortTags,
+    setInitialSelected
+  } 
+})

@@ -1,0 +1,182 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 500;
+  
+  color-scheme: light dark;
+
+  --text-color: #242424;
+  --bg-color: #f9f8f3;
+  --accent-dark: rgb(17, 19, 46);
+  --accent-light: rgba(17, 19, 46, 0.315);
+
+
+  --btn-bg-primary: rgb(17, 19, 46);
+  --btn-color-primary: rgba(255, 255, 255, 0.87);
+
+  --btn-bg-pop: rgb(180, 202, 79);
+  --btn-color-pop: rgb(25, 31, 25);
+
+  --outline-primary: rgb(0, 0, 0);
+  --outline-thickness: 1px;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root.dark{
+  --text-color: rgba(255, 255, 255, 0.87);
+  --bg-color: #242424;
+}
+.fs-100{font-size:0.75rem;}
+.fs-200{font-size:0.875rem;}
+.fs-300{font-size:1rem;}
+.fs-400{font-size:1.125rem;}
+.fs-500{font-size:1.25rem;}
+.fs-600{font-size:1.5rem;}
+.fs-700{font-size:2rem;}
+.fs-800{font-size:2.5rem;}
+.fs-900{font-size:3rem;}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body{
+  min-height: 100vh;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+ul{
+  margin-left: 2rem;
+  list-style-type: disc;
+}
+ul li::marker{
+  color:rgb(255, 170, 41);
+}
+ol > li > p > strong{
+  font-size: 1.375rem;
+}
+ul > li > strong{
+  font-size: 1.125rem;
+}
+ol > li{
+  margin-top: 1rem;
+}
+/* forms */
+input{
+  border: var(--outline-thickness) solid var(--outline-primary);
+  
+  padding: .3em;
+  border-radius: .2rem;
+  /* background:rgba(245, 184, 92, 0.096); */
+}
+
+
+fieldset{
+  border:none;
+}
+textarea{
+  padding: .7rem;
+  resize:none;
+}
+
+input[type="checkbox"]{
+  scale: 1.5;
+  margin-top: .2rem;
+  margin-left: .5rem;
+}
+
+/* flex */
+.flex{
+  display:flex;
+}
+.jc{
+  justify-content: center;
+}
+.ac{
+  align-items: center;
+}
+.jsb{
+  justify-content: space-between;
+}
+.grow{
+  flex-grow: 1;
+}
+.col{
+  flex-direction: column;
+}
+.gap{
+  gap: 1rem;
+}
+.gap-4{
+  gap: 2rem;
+}
+/* buttons */
+button{
+  background-color: var(--btn-bg-primary);
+  color: var(--btn-color-primary);
+  border: 1px solid black;
+  padding: .2em .4em;
+  font-size: 1rem;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none; 
+}
+
+.disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none; 
+}
+
+/* text */
+.tac{
+  text-align:center;
+}
+
+
+/* positioning */
+.rel{
+  position: relative;
+}
+.abs{
+  position: absolute;
+}
+
+
+/* margin */
+
+.m0a{
+  margin: 0 auto;
+}
+.mt-3{
+  margin-top: 1rem;
+}
+.m0{
+  margin: 0;
+}
+
+
+/* padding */
+.pad{
+  padding: 1rem;
+}
+
+/* display */
+
+.ib{
+  display: inline-block;
+}
+
+.block{
+  display: block;
+}

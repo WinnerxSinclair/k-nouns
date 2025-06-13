@@ -14,8 +14,8 @@
   --btn-bg-primary: rgb(17, 19, 46);
   --btn-color-primary: rgba(255, 255, 255, 0.87);
 
-  --btn-bg-pop: rgb(180, 202, 79);
-  --btn-color-pop: rgb(25, 31, 25);
+  --btn-bg-pop: rgb(252, 223, 170);
+  --btn-color-pop: rgb(29, 29, 29);
 
   --outline-primary: rgb(0, 0, 0);
   --outline-thickness: 1px;
@@ -45,11 +45,16 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+fieldset{
+  all: unset;
+}
 body{
   min-height: 100vh;
   background: var(--bg-color);
   color: var(--text-color);
+  font-family: 'Manrope, IBM Plex Sans';
+  font-family: 'IBM Plex Sans';
+  font-family:'Courier New', Courier, monospace;
 }
 
 ul{
@@ -77,7 +82,9 @@ input{
   /* background:rgba(245, 184, 92, 0.096); */
 }
 
-
+.bold{
+  font-weight: bold;
+}
 fieldset{
   border:none;
 }

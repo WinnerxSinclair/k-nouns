@@ -18,6 +18,7 @@ logs/
 # === Backend ===
 /backend/node_modules/
 /backend/.env
+/backend/dist/
 
 # Editor + IDEs
 .idea/

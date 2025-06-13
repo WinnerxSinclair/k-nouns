@@ -33,66 +33,69 @@
     </div>
     <div v-else class="filler-margin"></div>
     
-    <div class="test-grid">
-      <ContentLoadedTransition>
-      <div v-if="collectionStore.collections.length">
-        <h2 class="tac">Collections</h2>
-        <ContentLoadedTransition>
-          <div v-show="!isLoading">
-            <div>          
-              <button @click="collectionStore.selectAllCollections">Select All</button>
-              <button @click="collectionStore.deselectAll('collections')">Deselect All</button>
-            </div>       
-            <ul class="flex col ac opacity">
-              <li class="flex ac mt-3 gap" v-for="collection in collectionStore.collections" :key="collection._id">
-                <label 
-                  class="collection tac"
-                  :class="{'selected': collectionStore.selectedCollections.has(collection._id)}"
-                  :for="collection._id"
-                >
-                  {{ collection.name }}
-                </label>
-                <img v-if="countInfo && collection._id in countInfo?.byCollection" class="icon" src="../assets/cards.png" alt="">
-                <p v-else class="icon"></p>
-                <input 
-                  type="checkbox" 
-                  :value="collection._id" 
-                  v-model="collectionStore.selectedFilters.collections"
-                  :id="collection._id"
-                > 
-              </li>
-            </ul>
-          </div>
-        </ContentLoadedTransition>
-      </div>
-      </ContentLoadedTransition>
 
-      <div v-if="collectionStore.tags.length">
-        <h2 class="tac">Tags</h2>
-        <ContentLoadedTransition>
-          <div v-show="!isLoading">
-            <div>          
-              <button @click="collectionStore.selectAllTags">Select All</button>
-              <button @click="collectionStore.deselectAll('tags')">Deselect All</button>
-            </div>        
-            <ul class="flex col ac">
-              <li class="flex ac mt-3 gap" v-for="tag in collectionStore.tags" :key="tag">
-                <label 
-                  class="tags tac" 
-                  :class="{'selected': collectionStore.selectedTags.has(tag)}"
-                  :for="tag"
-                >
-                  {{ tag }}
-                </label>
-                <img v-if="tagSet && tagSet.has(tag)" class="icon" src="../assets/cards.png" alt="">
-                <p v-else class="icon"></p>
-                <input type="checkbox" :id="tag" :value="tag" v-model="collectionStore.selectedFilters.tags">
-              </li>      
-            </ul>
-          </div>
-        </ContentLoadedTransition>
-      </div>
-    </div>     
+    <div class="ul-container">
+      <fieldset>
+        <div class="flex jc all-none-btn-wrapper">
+          <button @click="collectionStore.selectAllCollections">All</button>
+          <button @click="collectionStore.deselectAll('collections')">None</button>
+        </div>
+        <ul class="label-list">
+          <li>
+            <div class="fs-500 bold">Collections</div>
+            <div class="fs-500 bold">Due</div>
+          </li>
+          <hr>
+          <li 
+            v-for="collection in collectionStore.collections" 
+            :key="collection._id"
+            :class="{'selected': collectionStore.selectedCollections.has(collection._id)}"
+          >
+            <input 
+              type="checkbox" 
+              :value="collection._id" 
+              v-model="collectionStore.selectedFilters.collections"
+              :id="collection._id"
+            >
+            <label class="label-row" :for="collection._id">
+              <span>{{ collection.name }}</span>
+              <span>{{ countInfo?.byCollection[collection._id] || 0 }}</span>
+            </label>          
+          </li>
+        </ul>
+      </fieldset>
+
+      <fieldset>
+        <div class="flex jc all-none-btn-wrapper">
+          <button @click="collectionStore.selectAllTags">All</button>
+          <button @click="collectionStore.deselectAll('tags')">None</button>
+        </div>
+        <ul class="label-list">
+          <li>
+            <div class="fs-500 bold">Tags</div>
+            <div class="fs-500 bold">Due</div>
+          </li>
+          <hr>
+          <li 
+            v-for="tag in collectionStore.tags" 
+            :key="tag"
+            :class="{'selected': collectionStore.selectedTags.has(tag)}"
+          >
+                            
+            <input 
+              type="checkbox" 
+              :value="tag" 
+              v-model="collectionStore.selectedFilters.tags"
+              :id="tag"
+            >
+            <label class="label-row" :for="tag">
+              <span>{{ tag }}</span>
+              <span>{{ tagSet?.has(tag) ? 'True' : 'False' }}</span>
+            </label> 
+          </li>
+        </ul>
+      </fieldset>
+    </div>
   </div>
 
 </template>
@@ -113,20 +116,19 @@ const countInfo = ref(null);
 onMounted(async () => {
   try{
     await collectionStore.store_fetchCollections();
-    
     await collectionStore.store_fetchTags();
     countInfo.value = await fetchDueCounts();
+   
 
     let keys = new Set(Object.keys(countInfo.value.byCollection));
-    collectionStore.setInitialSelected(keys, countInfo.value.tagsWithDue)
+    let tagNames = countInfo.value.tagsWithDue.map((tag) => tag._id);
+    
+    collectionStore.setInitialSelected(keys, tagNames);
     collectionStore.sortCollections(keys);
-    tagSet.value = new Set(countInfo.value.tagsWithDue);
 
+    tagSet.value = new Set(tagNames);
     collectionStore.sortTags(tagSet.value);
-    let x = new Promise(resolve => {
-      setTimeout(() => resolve('xd'), 1000);
-    });
-    await x;
+
     isLoading.value = false;
   }catch(err){
     console.error(err);
@@ -135,14 +137,67 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.all-none-btn-wrapper > button{
+  background:none;
+  color:inherit;
+  border:none;
+  font-size:inherit;
+  font-family: inherit;
+}
+
+.all-none-btn-wrapper{
+  gap: 2rem;
+}
+
+.ul-container{
+  display: flex;
+  gap: 5rem 12rem;
+  flex-flow: row wrap;
+  justify-content: center;
+}
+.label-list > li{
+  display:flex;
+  margin-top: .9rem;
+}
+
+.label-list > :first-child > :first-child,
+label > span:is(:first-child){
+  width: 200px;
+}
+.label-list > li:is(:first-child){
+  padding: .3rem 1rem;
+}
+.label-list > li:not(:first-child){
+  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  border-radius: 9999px;
+  user-select: none;
+  font-size: 1.2rem;
+}
+
+.selected{
+  background: hsla(15, 56%, 52%, 0.173);
+}
+.label-list > li:not(:first-child):not(.selected):hover{
+  background: hsla(0, 0%, 81%, 0.173);
+}
+.label-row{
+  display:flex;
+
+  padding: .3rem 1rem;
+  width: 100%;
+}
+
 .placeholder-1{
   height: 30px;
   width: 1px;
 }
+
 .icon{
   width: 25px;
   height: 25px;
 }
+
 input[type="checkbox"]{
   position: absolute;
   width: 1px;
@@ -154,9 +209,11 @@ input[type="checkbox"]{
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
+
 .collections-view-root{
   --custom-margin: 3rem;
 }
+
 .test-grid{
   display:grid;
   grid-template-columns: repeat(auto-fit, minmax(50ch, 1fr));
@@ -164,27 +221,7 @@ input[type="checkbox"]{
   gap: 2rem 0;
 }
 
-.collection, .tags{
-  width: 150px;
-  max-width: 150px;
-  word-wrap: break-word;
-  background: rgb(255, 190, 69);
-  border-radius: 1rem;
-  padding: .2em .5em;
-  display: block;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--text-color);
-  opacity: 50%;
-  user-select: none;
-}
-.selected{
-  opacity: 1;
-  outline: 1px solid rgba(0, 0, 0, 0.411);
-}
-.tags{
-  background: rgb(129, 223, 129);
-}
+
 form{
   padding: 2rem;
   background:white;
@@ -204,11 +241,13 @@ ul{
   background: var(--btn-bg-pop);
   color: var(--btn-color-pop);
   border-radius: 9999px;
-  border-bottom: 3px solid black;
+  /* border-bottom: 3px solid black; */
+  box-shadow: 2px 2px 0 1px rgba(250, 214, 148, 0.24);
   display: inline-block;
   margin-top: 2rem;
   margin-bottom: 1rem;
   transition: opacity 1s ease;
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
 }
 .or-and-btn-group, .filler-margin{
   margin-top: var(--custom-margin);

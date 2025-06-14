@@ -1,6 +1,7 @@
 
 import Flashcard from "../models/flashcard.js";
 import FlashcardGroup from "../models/cardGroup.js";
+import User from "../models/user.js";
 import mongoose from 'mongoose'
 const { startSession } = mongoose
 
@@ -218,16 +219,22 @@ const dueCardCounts = async (req, res) => {
   const uid = req.profile._id;
   let now = new Date();
   try{
-    let [doc] = await Flashcard.aggregate([
+
+    let [allCollections, allTags] = await Promise.all([
+      FlashcardGroup.find({ uid }).select('_id name').lean(),
+      User.find({ _id: uid }).select('tags').lean()
+    ]);
+
+    let [dueCounts] = await Flashcard.aggregate([
       { $match: { uid: uid, due: { $lte: now } } },
       {
         $facet: {
           byCollection: [
             { $group: { _id: '$group_id', due: { $sum: 1 } } }
           ],
-          tagsDue: [
+          byTags: [
             { $unwind: '$tags' },
-            { $group: { _id: '$tags' } }
+            { $group: { _id: '$tags', due: { $sum: 1 } } }
           ],
           totalDue: [
             { $group: { _id: null, total: { $sum: 1 } } }
@@ -236,23 +243,68 @@ const dueCardCounts = async (req, res) => {
       }
     ]).exec();
 
-   console.log(doc);
-    let transformToMap = doc.byCollection.reduce((acc, cur) => {
+    allTags = allTags[0].tags;
+
+    const collectionDueCounts = dueCounts.byCollection.reduce((acc, cur) => {
       acc[cur._id] = cur.due;
       return acc;
     }, {});
+    
+    const tagDueCounts = dueCounts.byTags.reduce((acc, cur) => {
+      acc[cur._id] = cur.due;
+      return acc;
+    }, {});
+    console.log(allTags)
+    console.log(tagDueCounts);
+    const sortedCollections = allCollections.sort((a, b) => {
+      const aDue = collectionDueCounts[a._id] || 0;
+      const bDue = collectionDueCounts[b._id] || 0;
+      
+      if(aDue > 0 && bDue > 0 && aDue > bDue) return -1;
+      if(aDue > 0 && bDue > 0 && aDue < bDue) return 1;
+      if (aDue > 0 && bDue === 0) return -1;
+      if (aDue === 0 && bDue > 0) return 1;
+      return a.name.localeCompare(b.name);
+    });
 
-   
+    const sortedTags = allTags.sort((a, b) => {
+      const aDue = tagDueCounts[a] || 0;
+      const bDue = tagDueCounts[b] || 0;
+      
+      if(aDue > 0 && bDue > 0 && aDue > bDue) return -1;
+      if(aDue > 0 && bDue > 0 && aDue < bDue) return 1;
+      if (aDue > 0 && bDue === 0) return -1;
+      if (aDue === 0 && bDue > 0) return 1;
+      return a.localeCompare(b);
+    });
+
+    const mappedCols = sortedCollections.map(col => ({
+      ...col,
+      dueCount: collectionDueCounts[col._id] ?? 0
+    }));
+    const colsWithDueCards = mappedCols.filter((col) => col.dueCount > 0).map((c) => c._id);
+
+
+    const mappedTags = sortedTags.map((tag) => ({
+      name: tag,
+      dueCount: tagDueCounts[tag] ?? 0
+    }));
+    
+    const tagsWithDueCards = mappedTags.filter((tag) => tag.dueCount > 0).map((t) => t.name);
+
     res.json({
-      totalDue: doc.totalDue[0]?.total ?? 0,
-      byCollection: transformToMap,
-      tagsWithDue: doc.tagsDue ?? [],
+      totalDue: dueCounts.totalDue[0]?.total ?? 0,
+      collections: mappedCols ?? [],
+      tags: mappedTags ?? [],
+      colsWithDueCards: colsWithDueCards ?? [],
+      tagsWithDueCards: tagsWithDueCards ?? [],
     });
   }catch(err){
     console.error(err);
     res.status(500).json({ message: 'problem aggregating counts' });
   }
 }
+
 
 
 export default { 

@@ -4,23 +4,27 @@
     <div class="tac">
       <ContentLoadedTransition>
         <div v-if="!isLoading" class="flex ac jc gap">
-          <p  class="fs-500">{{ countInfo?.totalDue }}</p>
+          <p  class="fs-500">{{ totalDue }}</p>
           <img class="icon" src="../assets/cards.png" alt="">
         </div>
       </ContentLoadedTransition>
 
       <div v-if="isLoading" class="placeholder-1"></div>
-      <RouterLink :class="{'disabled': isLoading || !collectionStore.somethingSelected}" class="study-btn" to="/review">
+      <RouterLink 
+        :class="{'disabled': isLoading || !collectionStore.somethingSelected}" 
+        class="study-btn btn-main" 
+        to="/review"
+      >
         {{ isLoading ? 'Loading...' : 'Study Due Cards' }}
       </RouterLink>
 
-      <p v-if="!collectionStore.tagOrColExists && !isLoading">Nothing Exists, create collections and cards in the Dashboard</p> 
+      <p v-if="!oneExists && !isLoading">Nothing Exists, create collections and cards in the Dashboard</p> 
     </div>
                      
-    <div v-if="collectionStore.tagAndColExists" class="flex ac jc or-and-btn-group" >
+    <div v-if="bothExist" class="flex ac jc or-and-btn-group" >
       <button 
         @click="collectionStore.queryConditional = '$or'"
-        :class="{'selected-btn': collectionStore.queryConditional === '$or'}"
+        :class="{'selected-btn': collectionStore.queryConditional === '$or'}"      
       >
         OR
       </button>
@@ -47,7 +51,7 @@
           </li>
           <hr>
           <li 
-            v-for="collection in collectionStore.collections" 
+            v-for="collection in collections" 
             :key="collection._id"
             :class="{'selected': collectionStore.selectedCollections.has(collection._id)}"
           >
@@ -59,7 +63,7 @@
             >
             <label class="label-row" :for="collection._id">
               <span>{{ collection.name }}</span>
-              <span>{{ countInfo?.byCollection[collection._id] || 0 }}</span>
+              <span>{{ collection.dueCount }}</span>
             </label>          
           </li>
         </ul>
@@ -77,20 +81,20 @@
           </li>
           <hr>
           <li 
-            v-for="tag in collectionStore.tags" 
-            :key="tag"
-            :class="{'selected': collectionStore.selectedTags.has(tag)}"
+            v-for="tag in tags" 
+            :key="tag.name"
+            :class="{'selected': collectionStore.selectedTags.has(tag.name)}"
           >
                             
             <input 
               type="checkbox" 
-              :value="tag" 
+              :value="tag.name" 
               v-model="collectionStore.selectedFilters.tags"
-              :id="tag"
+              :id="tag.name"
             >
-            <label class="label-row" :for="tag">
-              <span>{{ tag }}</span>
-              <span>{{ tagSet?.has(tag) ? 'True' : 'False' }}</span>
+            <label class="label-row" :for="tag.name">
+              <span>{{ tag.name }}</span>
+              <span>{{ tag.dueCount }}</span>
             </label> 
           </li>
         </ul>
@@ -101,7 +105,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
 import { RouterLink } from 'vue-router';
 import { useCollectionStore } from '../stores/collectionStore.js';
@@ -109,26 +113,20 @@ import { fetchDueCounts } from '../api/api.js';
 
 const collectionStore = useCollectionStore();
 const isLoading = ref(true);
-const tagSet = ref(null);
-const countInfo = ref(null);
-
+let countInfo = ref(null);
+let collections = computed(() => countInfo.value?.collections ?? []);
+let tags = computed(() => countInfo.value?.tags ?? []);
+let totalDue = computed(() => countInfo.value?.totalDue ?? 0);
+let bothExist = computed(() => collections.value.length && tags.value.length);
+let oneExists = computed(() => collections.value.length || tags.value.length);
 
 onMounted(async () => {
   try{
-    await collectionStore.store_fetchCollections();
-    await collectionStore.store_fetchTags();
     countInfo.value = await fetchDueCounts();
-   
-
-    let keys = new Set(Object.keys(countInfo.value.byCollection));
-    let tagNames = countInfo.value.tagsWithDue.map((tag) => tag._id);
-    
-    collectionStore.setInitialSelected(keys, tagNames);
-    collectionStore.sortCollections(keys);
-
-    tagSet.value = new Set(tagNames);
-    collectionStore.sortTags(tagSet.value);
-
+    console.log(countInfo.value)
+    collectionStore.collections = countInfo.value.collections;
+    collectionStore.tags = countInfo.value.tags; 
+    collectionStore.setInitialSelected(countInfo.value.colsWithDueCards, countInfo.value.tagsWithDueCards);
     isLoading.value = false;
   }catch(err){
     console.error(err);
@@ -137,14 +135,18 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.all-none-btn-wrapper > button{
-  background:none;
-  color:inherit;
-  border:none;
+
+.all-none-btn-wrapper > button,
+.or-and-btn-group > button{
   font-size:inherit;
   font-family: inherit;
+  font-weight: inherit;
+  cursor: pointer;
 }
-
+.or-and-btn-group > button:hover{
+  text-decoration: underline;
+  text-decoration-color: brown;  
+}
 .all-none-btn-wrapper{
   gap: 2rem;
 }
@@ -232,25 +234,27 @@ ul{
   margin: 0;
 }
 .selected-btn{
-  background: rgb(98, 112, 196);
+  text-decoration: underline;
+  text-decoration-color: brown;
 }
 .study-btn{
   text-decoration: none;
   padding: .5em 1em;
   font-size: 1.2rem;
-  background: var(--btn-bg-pop);
-  color: var(--btn-color-pop);
   border-radius: 9999px;
-  /* border-bottom: 3px solid black; */
-  box-shadow: 2px 2px 0 1px rgba(250, 214, 148, 0.24);
   display: inline-block;
   margin-top: 2rem;
   margin-bottom: 1rem;
   transition: opacity 1s ease;
-  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  user-select: none;
 }
 .or-and-btn-group, .filler-margin{
   margin-top: var(--custom-margin);
+  gap: 2rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 2rem;
 }
 
 </style>

@@ -126,12 +126,18 @@ input[type="checkbox"]{
 }
 /* buttons */
 button{
+  padding: .2em .4em;
+  font-size: 1rem;
+  background: none;
+  border: none;
+}
+
+.btn-main{
   background-color: var(--btn-bg-primary);
   color: var(--btn-color-primary);
   border: 1px solid black;
-  padding: .2em .4em;
-  font-size: 1rem;
 }
+
 
 button:disabled {
   opacity: 0.5;

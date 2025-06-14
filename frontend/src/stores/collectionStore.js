@@ -14,6 +14,7 @@ export const useCollectionStore = defineStore('collection', () => {
   }
 
   const collectionsIds = computed(() => collections.value.map((col) => col._id));
+  const tagNames = computed(() => tags.value.map((tag) => tag.name));
 
   const queryConditional = ref('$or');
 
@@ -61,15 +62,13 @@ export const useCollectionStore = defineStore('collection', () => {
   });
   const selectedCollections = computed(() => new Set(selectedFilters.value.collections));
   const selectedTags = computed(() => new Set(selectedFilters.value.tags));
-  const somethingSelected = computed(() => selectedFilters.value.collections.length > 0 ||                                           selectedFilters.value.tags.length > 0);
-  const tagOrColExists = computed(() => tags.value.length > 0 || collections.value.length > 0);
-  const tagAndColExists = computed(() => tags.value.length > 0 && collections.value.length > 0);
-
+  const somethingSelected = computed(() => selectedFilters.value.collections.length > 0 || 
+                                           selectedFilters.value.tags.length > 0);
   function selectAllCollections(){
     selectedFilters.value.collections = [...collectionsIds.value];
   }
   function selectAllTags(){
-    selectedFilters.value.tags = [...tags.value];
+    selectedFilters.value.tags = [...tagNames.value];
   }
   function deselectAll(name){
     selectedFilters.value[name] = [];
@@ -79,28 +78,7 @@ export const useCollectionStore = defineStore('collection', () => {
     selectedFilters.value.tags = tags;
   }
 
-  function sortCollections(colsWithCards){
-    collections.value.sort((a,b) => {
-      if(colsWithCards.has(a._id)){
-        return -1;
-      }
-      if(colsWithCards.has(b._id)){
-        return 1;
-      }
-      return 0;
-    })
-  }
-  function sortTags(tagsWithCards){
-    tags.value.sort((a,b) => {
-      if(tagsWithCards.has(a)){
-        return -1;
-      }
-      if(tagsWithCards.has(b)){
-        return 1;
-      }
-      return 0;
-    })
-  }
+
 
   return {
     tags,
@@ -109,8 +87,8 @@ export const useCollectionStore = defineStore('collection', () => {
     selectedFilters,
     queryConditional,
     somethingSelected,
-    tagOrColExists,
-    tagAndColExists,
+   
+   
     collectionMap,
     selectedCollections,
     selectedTags,
@@ -124,8 +102,6 @@ export const useCollectionStore = defineStore('collection', () => {
     selectAllCollections,
     selectAllTags,
     deselectAll,
-    sortCollections,
-    sortTags,
     setInitialSelected
   } 
 })

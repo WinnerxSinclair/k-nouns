@@ -13,7 +13,8 @@ const props = defineProps({
 
 <style scoped>
 .header{
-  margin-top: 2rem;
-  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 </style>

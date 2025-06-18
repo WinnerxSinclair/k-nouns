@@ -20,86 +20,91 @@
 
       <p v-if="!oneExists && !isLoading">Nothing Exists, create collections and cards in the Dashboard</p> 
     </div>
-                     
-    <div v-if="bothExist" class="flex ac jc or-and-btn-group" >
-      <button 
-        @click="collectionStore.queryConditional = '$or'"
-        :class="{'selected-btn': collectionStore.queryConditional === '$or'}"      
-      >
-        OR
-      </button>
-      <button 
-        @click="collectionStore.queryConditional = '$and'"
-        :class="{'selected-btn': collectionStore.queryConditional === '$and'}"
-      >
-        AND
-      </button>      
-    </div>
-    <div v-else class="filler-margin"></div>
+    
+    <ContentLoadedTransition>
+      <div v-if="bothExist" class="flex ac jc or-and-btn-group" >
+        <button 
+          @click="collectionStore.queryConditional = '$or'"
+          :class="{'selected-btn': collectionStore.queryConditional === '$or'}"      
+        >
+          OR
+        </button>
+        <button 
+          @click="collectionStore.queryConditional = '$and'"
+          :class="{'selected-btn': collectionStore.queryConditional === '$and'}"
+        >
+          AND
+        </button>      
+      </div>
+      <div v-else class="filler-margin"></div>
+    </ContentLoadedTransition>
+
     
 
-    <div class="ul-container">
-      <fieldset>
-        <div class="flex jc all-none-btn-wrapper">
-          <button @click="collectionStore.selectAllCollections">All</button>
-          <button @click="collectionStore.deselectAll('collections')">None</button>
-        </div>
-        <ul class="label-list">
-          <li>
-            <div class="fs-500 bold">Collections</div>
-            <div class="fs-500 bold">Due</div>
-          </li>
-          <hr>
-          <li 
-            v-for="collection in collections" 
-            :key="collection._id"
-            :class="{'selected': collectionStore.selectedCollections.has(collection._id)}"
-          >
-            <input 
-              type="checkbox" 
-              :value="collection._id" 
-              v-model="collectionStore.selectedFilters.collections"
-              :id="collection._id"
+    <ContentLoadedTransition>
+      <div v-if="!isLoading" class="ul-container">
+        <fieldset>
+          <div class="flex jc all-none-btn-wrapper">
+            <button @click="collectionStore.selectAllCollections">All</button>
+            <button @click="collectionStore.deselectAll('collections')">None</button>
+          </div>
+          <ul class="label-list">
+            <li>
+              <h4 class="fs-500 bold">Collections</h4>
+              <h4 class="fs-500 bold">Due</h4>
+            </li>
+            <hr>
+            <li 
+              v-for="collection in collections" 
+              :key="collection._id"
+              :class="{'selected': collectionStore.selectedCollections.has(collection._id)}"
             >
-            <label class="label-row" :for="collection._id">
-              <span>{{ collection.name }}</span>
-              <span>{{ collection.dueCount }}</span>
-            </label>          
-          </li>
-        </ul>
-      </fieldset>
+              <input 
+                type="checkbox" 
+                :value="collection._id" 
+                v-model="collectionStore.selectedFilters.collections"
+                :id="collection._id"
+              >
+              <label class="label-row" :for="collection._id">
+                <span>{{ collection.name }}</span>
+                <span>{{ collection.dueCount }}</span>
+              </label>          
+            </li>
+          </ul>
+        </fieldset>
 
-      <fieldset>
-        <div class="flex jc all-none-btn-wrapper">
-          <button @click="collectionStore.selectAllTags">All</button>
-          <button @click="collectionStore.deselectAll('tags')">None</button>
-        </div>
-        <ul class="label-list">
-          <li>
-            <div class="fs-500 bold">Tags</div>
-            <div class="fs-500 bold">Due</div>
-          </li>
-          <hr>
-          <li 
-            v-for="tag in tags" 
-            :key="tag.name"
-            :class="{'selected': collectionStore.selectedTags.has(tag.name)}"
-          >
-                            
-            <input 
-              type="checkbox" 
-              :value="tag.name" 
-              v-model="collectionStore.selectedFilters.tags"
-              :id="tag.name"
+        <fieldset>
+          <div class="flex jc all-none-btn-wrapper">
+            <button @click="collectionStore.selectAllTags">All</button>
+            <button @click="collectionStore.deselectAll('tags')">None</button>
+          </div>
+          <ul class="label-list">
+            <li>
+              <h4 class="fs-500 bold">Tags</h4>
+              <h4 class="fs-500 bold">Due</h4>
+            </li>
+            <hr>
+            <li 
+              v-for="tag in tags" 
+              :key="tag.name"
+              :class="{'selected': collectionStore.selectedTags.has(tag.name)}"
             >
-            <label class="label-row" :for="tag.name">
-              <span>{{ tag.name }}</span>
-              <span>{{ tag.dueCount }}</span>
-            </label> 
-          </li>
-        </ul>
-      </fieldset>
-    </div>
+                              
+              <input 
+                type="checkbox" 
+                :value="tag.name" 
+                v-model="collectionStore.selectedFilters.tags"
+                :id="tag.name"
+              >
+              <label class="label-row" :for="tag.name">
+                <span>{{ tag.name }}</span>
+                <span>{{ tag.dueCount }}</span>
+              </label> 
+            </li>
+          </ul>
+        </fieldset>
+      </div>
+    </ContentLoadedTransition>
   </div>
 
 </template>
@@ -248,6 +253,10 @@ ul{
   transition: opacity 1s ease;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   user-select: none;
+}
+
+button:not(.study-btn){
+  font-family:'Courier New', Courier, monospace;
 }
 .or-and-btn-group, .filler-margin{
   margin-top: var(--custom-margin);

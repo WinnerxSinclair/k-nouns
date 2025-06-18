@@ -9,6 +9,7 @@ import StudyView from '../views/StudyView.vue';
 import CheckEmailView from '../views/CheckEmailView.vue'
 import VerifyEmail from '../views/VerifyEmail.vue';
 import DashsboardView from '../views/DashboardView.vue';
+import EditFlashcardView from '../views/EditFlashcardView.vue';
 
 const routes = [
   {
@@ -40,6 +41,12 @@ const routes = [
     component: CollectionView,
     props: true,
     meta: { requiresAuth: true, requiresVerify: true }  
+  },
+  {
+    path: '/card/:cardId',
+    component: EditFlashcardView,
+    props: true,
+    meta: { requiresAuth: true, requiresVerify: true }
   },
   {
     path: '/review',

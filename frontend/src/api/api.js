@@ -69,10 +69,19 @@ export const createCard = async (q, input) => {
 }
 
 export const deleteCard = async (q) => {
-  const response = await api.delete(`/api/card_collections/${q}`);
+  const response = await api.delete(`/api/cards/${q}`);
   return response.data;
 }
 
+export const fetchCard = async (q) => {
+  const response = await api.get(`/api/cards/${q}`);
+  return response.data;
+}
+
+export const updateCard = async (q, payload) => {
+  const response = await api.post(`/api/cards/${q}`, payload);
+  return response.data;
+}
 
 //review -  related to flashcards
 export const fetchReviewBatch = async (payload) => {
@@ -91,7 +100,7 @@ export const fetchCardBatch = async (payload) => {
 }
 
 export const fetchDueCounts = async () => {
-  const response = await api.get('/api/card_collections/cards/due');
+  const response = await api.get('/api/review/cards/due');
   return response.data;
 }
 

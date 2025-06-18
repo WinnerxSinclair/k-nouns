@@ -2,7 +2,7 @@
   <div class="flex col mt-3">
     <label>{{ label }}</label>
     <textarea 
-      v-autosize 
+      v-autosize
       name="" id="" 
       :placeholder="placeholder" 
       v-model="model"

@@ -14,8 +14,9 @@ const addTag = async (req, res) => {
 
 const getTags = async (req, res) => {
   try{
-    const user = await User.findById(req.profile._id).select('tags');
-    res.json(user.tags);
+    const user = await User.findById(req.profile._id).select('tags').lean();
+    const sortedTags = user.tags.sort((a,b) => a.localeCompare(b));
+    res.json(sortedTags);
   }catch(err){
     console.log(err);
     res.status(500).json({ message: 'failed to get tags' });

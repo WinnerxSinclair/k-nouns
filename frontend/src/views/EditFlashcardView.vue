@@ -1,12 +1,13 @@
 <template>
-  <div class="flex col ac grow">
-    <div class="fs-500">{{ collectionName }}</div>
-    <TheHeader header="New Entry" />
-    <form @submit.prevent="saveEntry" > 
+  <div class="flex col ac grow" >
+    
+    <TheHeader header="Edit Entry" />
+    
+    <form @submit.prevent="saveEntry" v-if="form" > 
       <TheTextarea 
         v-model="form.context" 
         label="Context" 
-        placeholder="e.g. 22yr old male speaking to younger brother" 
+        
       />
 
       <TheTextarea 
@@ -46,7 +47,7 @@
       </TheOverlay>
 
       <div class="mt-3 gap flex">        
-        <label for="mirror">Mirror?</label>
+        <label for="mirror">{{ form?.pairId ? 'Edit Mirror As Well?' : 'Add Mirror?' }}</label>
         <input id="mirror" type="checkbox" v-model="form.mirror">
       </div>
 
@@ -71,6 +72,7 @@
       <FlatButton text="Save Entry" :disabled="!form.back.length || !form.front.length" />
       
     </form>
+    
 
     <ModalForm label="Tag" :show="showTagForm" @hide="showTagForm = false" @submit="addTagLocal" />
    
@@ -78,10 +80,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { translate, explain } from '../api/api.js'
 import { useCollectionStore } from '../stores/collectionStore.js'
-import { createTag, createCard } from '../api/api.js'
+import { createTag, updateCard } from '../api/api.js'
+import { fetchCard } from '../api/api.js'
 import TheHeader from '../components/TheHeader.vue'
 import TheTextarea from '../components/TheTextarea.vue'
 import TheOverlay from '../components/widgets/TheOverlay.vue'
@@ -89,20 +92,14 @@ import TheSpinner from '../components/widgets/TheSpinner.vue'
 import ModalForm from '../components/ModalForm.vue'
 import FlatButton from '../components/buttons/FlatButton.vue'
 
-const props = defineProps({
-  id: String
-});
-const collectionName = computed(() => collectionStore.collectionMap[props.id]);
-const collectionStore = useCollectionStore();
 
-const form = ref({
-  context: '',
-  front: '',
-  back: '',
-  explanation: '',
-  mirror: false,
-  tags: []
+
+const props = defineProps({
+  cardId: String
 });
+
+const collectionStore = useCollectionStore();
+const form = ref(null);
 
 const submitting = ref(false);
 const translateLoading = ref(false);
@@ -176,13 +173,12 @@ const saveEntry = async () => {
     form.value.tags = Array.from(tags.value);
   }
   let payload = {
-    group_id: props.id,
     ...form.value,
   }
 
   try{
-    await createCard(props.id, payload);
-    await collectionStore.store_fetchCollectionTags(props.id);
+    await updateCard(props.cardId, payload);
+    // await collectionStore.store_fetchCollectionTags(props.id);
   }catch(err){
     console.error(err);
   }finally{
@@ -191,14 +187,25 @@ const saveEntry = async () => {
 }
 
 onMounted(async () => {
-  if(!collectionName.value){
-    let name = await collectionStore.store_fetchCollectionById(props.id);
-    collectionStore.setIdName(props.id, name);
-  }
   if(!collectionStore.tags.length){
     await collectionStore.store_fetchTags();
   }
+  
+  try{
+    const card = await fetchCard(props.cardId);
+    
+    form.value = { 
+      ...card,
+      mirror: card?.pairId ? true : false 
+    };
+    console.log(form.value);
+    tags.value = new Set(card.tags);
+  }catch(err){
+    console.error(err);
+  }
+   
 });
+
 </script>
 
 <style scoped>

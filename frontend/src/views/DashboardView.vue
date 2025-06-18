@@ -1,5 +1,6 @@
 <template>
   <div class="collections-view-root m0a">
+    <TheHeader header="Dashboard" />
     <div class="flex">      
       <button class="m0a block" @click="showForm.collection = true">+ Create New Collection</button>
       <button class="m0a block" @click="showForm.tag = true">+ Create New Tag</button>
@@ -65,6 +66,7 @@ import { onMounted, ref } from 'vue'
 import { createCardGroup, createTag } from '../api/api.js';
 import ModalForm from '../components/ModalForm.vue';
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
+import TheHeader from '../components/TheHeader.vue'
 import { RouterLink } from 'vue-router';
 import { useCollectionStore } from '../stores/collectionStore.js';
 import { useToastStore } from '../stores/toastStore.js';

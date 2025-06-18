@@ -3,6 +3,7 @@ import Flashcard from "../models/flashcard.js";
 import FlashcardGroup from "../models/cardGroup.js";
 import User from "../models/user.js";
 import mongoose from 'mongoose'
+import flashcard from "../models/flashcard.js";
 const { startSession } = mongoose
 
 //groups
@@ -116,6 +117,7 @@ const createCard = async (req, res) => {
 }
 
 
+
 const getCards = async (req, res) => {
   const { collectionId } = req.params;
   try{
@@ -215,9 +217,50 @@ const deleteCard = async (req, res) => {
   }
 }
 
+const getCard = async (req, res) => {
+  const { cardId } = req.params;
+  const uid = req.profile._id;
+  try{
+    const card = await Flashcard.findOne({ _id: cardId, uid }).select('back context explanation front group_id pairId tags');
+    res.json(card);
+  }catch(err){
+    console.error(err);
+    res.status(500).json({ message: 'error getting card' });
+  }
+}
+
+const updateCard = async (req, res) => {
+  const { _id, front, back, context, explanation, tags, mirror, pairId, group_id } = req.body;
+  const uid = req.profile._id;
+  const session = await startSession();
+  try{
+    session.startTransaction();
+    if(!pairId && mirror){
+      const newPairId = crypto.randomUUID();
+      const srsSeed = { reps: 0, interval: 0, ease: 2.5, due: new Date(), lapses: 0 };
+      await Flashcard.updateOne({ _id, uid }, { front, back, context, explanation, tags, pairId: newPairId }, { session });
+      await Flashcard.insertOne({ uid, group_id, front: back, back: front, context, explanation, tags, pairId: newPairId, ...srsSeed }, { session });
+    }else if(pairId && mirror){
+      await Flashcard.updateOne({ _id, uid }, { front, back, context, explanation, tags }, { session });
+      await Flashcard.updateOne({ _id: { $ne: _id }, pairId, uid }, { front: back, back: front, context, explanation, tags }, { session });
+    }else{
+      await Flashcard.updateOne({ _id, uid }, { front, back, context, explanation, tags }, { session });
+    }
+    await session.commitTransaction();
+    res.json({ message: 'updated cards successfully' });
+  }catch(err){
+    await session.abortTransaction();
+    console.error(err);
+    session.endSession();
+    res.status(500).json({ message: 'error updating cards' });
+  }
+  
+}
+
 const dueCardCounts = async (req, res) => {
   const uid = req.profile._id;
   let now = new Date();
+  let twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000);
   try{
 
     let [allCollections, allTags] = await Promise.all([
@@ -226,7 +269,7 @@ const dueCardCounts = async (req, res) => {
     ]);
 
     let [dueCounts] = await Flashcard.aggregate([
-      { $match: { uid: uid, due: { $lte: now } } },
+      { $match: { uid: uid, due: { $lte: twoMinutesFromNow } } },
       {
         $facet: {
           byCollection: [
@@ -309,7 +352,8 @@ const dueCardCounts = async (req, res) => {
 
 export default { 
   createCardGroup, 
-  createCard, 
+  createCard,
+  updateCard, 
   getGroups, 
   getCards, 
   getGroupTags, 
@@ -317,5 +361,6 @@ export default {
   getCardBatch,
   gradeCard,
   deleteCard,
-  dueCardCounts 
+  dueCardCounts,
+  getCard 
 }

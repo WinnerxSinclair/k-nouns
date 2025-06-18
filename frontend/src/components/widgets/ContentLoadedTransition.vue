@@ -10,6 +10,6 @@
   opacity: 0;
 }
 .content-enter-active{
-  transition: opacity 1s ease;
+  transition: opacity .75s ease-in-out;
 }
 </style>

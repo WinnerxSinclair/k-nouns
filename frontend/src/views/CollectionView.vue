@@ -7,9 +7,12 @@
 
     <ContentLoadedTransition>      
       <ul v-if="cards.length && collectionName">
-        <li v-for="(card, i) in cards" :key="card._id">
-          <p>{{ card.front }}</p>
-          <img @click="handleCardDelete(card._id, i)" class="icon" src="../assets/delete.png" alt="">
+        <li class="flex jsb ac" v-for="(card, i) in cards" :key="card._id">
+          <RouterLink :to="`/card/${card._id}`" class="card-link flex jsb">
+            {{ card.front }}
+ 
+          </RouterLink>
+          
         </li>
       </ul>
     </ContentLoadedTransition>
@@ -26,9 +29,11 @@ const props = defineProps({
   id: String
 });
 
+const collectionStore = useCollectionStore();
+
 const collectionName = computed(() => collectionStore.collectionMap[props.id]);
 
-const collectionStore = useCollectionStore();
+
 const cards = ref([]);
 
 async function handleCardDelete(id, i){
@@ -46,7 +51,6 @@ onMounted(async () => {
     const response_cards = await fetchCards(props.id);
     cards.value = response_cards;
     if(!collectionName.value){
-      console.log('lamow')
       let name = await collectionStore.store_fetchCollectionById(props.id);
       collectionStore.setIdName(props.id, name);
     }
@@ -57,6 +61,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.card-link{
+  padding: .5em 1em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  flex-grow: 1;
+}
 .new-card-btn{
   text-decoration: none;
   color: var(--btn-color-primary);
@@ -78,28 +90,20 @@ ul{
 }
 li{
   background: white;
-  border-radius: 9999px;
+  
   border: 1px solid rgba(0, 0, 0, 0.301);;
-  padding: .5rem 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   cursor: pointer; 
 }
 li:hover{
   background: rgb(202, 202, 202);
 }
-p{
-  padding: 0 1rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+
 
 .icon{
   --w: 25px;
   width: var(--w);
   min-width: var(--w);
+  height: var(--w);
   margin-right: 1rem;
   cursor: pointer;
   border-radius: 50%;

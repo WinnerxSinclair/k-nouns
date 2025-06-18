@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 1500,
     required: true
-  }, //not related to access or refresh tokens
+  }, 
   tags: { type: [String], default: [] } 
 }, { timestamps: true });
 

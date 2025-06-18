@@ -5,7 +5,8 @@ import path from 'path'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import tokenUsageRoutes from './routes/tokenUsageRoutes.js'
-import flashcardRoutes from './routes/flashcardRoutes.js'
+import flashcardGroupRoutes from './routes/flashcardGroupRoutes.js'
+import cardRoutes from './routes/cardRoutes.js'
 import claudeRoutes from './routes/claudeRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import reviewRoutes from './routes/reviewRoutes.js'
@@ -59,7 +60,8 @@ app.get('/register', (req, res, next) => {
 
 
 app.use('/api/tokenUsage', tokenUsageRoutes);
-app.use('/api/card_collections', authenticateToken, flashcardRoutes);
+app.use('/api/card_collections', authenticateToken, flashcardGroupRoutes);
+app.use('/api/cards', authenticateToken, cardRoutes);
 app.use('/api/ai', authenticateToken, claudeRoutes)
 app.use('/api/user', authenticateToken, userRoutes);
 app.use('/api/review', authenticateToken, reviewRoutes);

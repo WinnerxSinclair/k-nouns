@@ -1,7 +1,7 @@
 <template>
   <div class="flex jc">    
-    <Flashcard :card="currentCard" />
-    <p v-if="loading" class="p-4">Loading…</p>
+    <Flashcard :card="currentCard" :loading="loading" />
+    
     <p v-if="noMoreCards" class="tac">No More Cards!</p>
   </div>
 </template>
@@ -24,6 +24,7 @@ const noMoreCards = ref(false);
 
 
 async function getBatch() {
+  loading.value = true;
   try {
     const { cards } = await fetchCardBatch({ 
       want: 10, 
@@ -34,9 +35,10 @@ async function getBatch() {
     console.log(cards)
     queue.value.push(...cards)
     lastFetch = Date.now()
-    loading.value = false
   } catch (err) {
     console.error(err)
+  } finally{
+    loading.value = false;
   }
 }
 
@@ -58,6 +60,8 @@ function showCard(){
 }
 
 async function gradeCard_local(grade){
+  if(loading.value) return;
+  loading.value = true;
   try{
     const card = currentCard.value;
     await gradeCard({ card, grade });
@@ -67,6 +71,8 @@ async function gradeCard_local(grade){
     showCard();
   }catch(err){
     console.error(err);
+  }finally{
+    loading.value = false;
   }
 }
 

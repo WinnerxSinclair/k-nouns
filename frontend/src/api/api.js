@@ -40,6 +40,10 @@ export const createCardGroup = async (input) => {
   return response.data;
 }
 
+export const deleteCollection = async (q) => {
+  const response = await api.delete(`/api/card_collections/${q}`);
+  return response.data;
+}
 export const fetchCollections = async (q) => {
   const response = await api.get('/api/card_collections', {
     params: q
@@ -50,6 +54,11 @@ export const fetchCollections = async (q) => {
 
 export const fetchCollectionById = async (q) => {
   const response = await api.get(`/api/card_collections/${q}`);
+  return response.data;
+}
+
+export const updateCollectionName = async (q, payload) => {
+  const response = await api.patch(`/api/card_collections/${q}/nameChange`, payload);
   return response.data;
 }
 

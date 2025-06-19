@@ -37,7 +37,7 @@ const routes = [
     meta: { requiresAuth: true, requiresVerify: true }
   },
   {
-    path: '/collection/:id',
+    path: '/collection/:colId',
     component: CollectionView,
     props: true,
     meta: { requiresAuth: true, requiresVerify: true }  

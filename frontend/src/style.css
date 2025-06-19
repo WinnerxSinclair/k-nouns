@@ -123,11 +123,17 @@ a{
 .jsb{
   justify-content: space-between;
 }
+.jfe{
+  justify-content: flex-end;
+}
 .grow{
   flex-grow: 1;
 }
 .col{
   flex-direction: column;
+}
+.gap-0{
+  gap: .2rem;
 }
 .gap{
   gap: 1rem;

@@ -23,6 +23,26 @@ const createCardGroup = async (req, res) => {
   }
 };
 
+const deleteGroup = async (req, res) => {
+  const uid = req.profile._id;
+  const { collectionId } = req.params;
+  console.log(collectionId);
+  const session = await startSession();
+  try{
+    session.startTransaction();
+    await FlashcardGroup.deleteOne({ uid, _id: collectionId }, { session });
+    await Flashcard.deleteMany({ uid, group_id: collectionId }, { session });
+    await session.commitTransaction();
+    res.json({ message: 'delete group and cards' });
+  }catch(err){
+    await session.abortTransaction();
+    console.error(err);
+    res.status(500).json({ message: 'error' });
+  }finally{
+    session.endSession();
+  }
+}
+
 const getGroups = async (req, res) => {
   const uid = req.profile._id;
   try{
@@ -36,8 +56,6 @@ const getGroups = async (req, res) => {
 
 const getGroupById = async (req, res) => {
   const uid = req.profile._id;
-  console.log(req.params);
-  console.log('asdigbsidufgsiudfgs')
   const { collectionId } = req.params;
   try{
     const group = await FlashcardGroup.findOne({ _id: collectionId, uid }).lean();
@@ -61,7 +79,18 @@ const getGroupTags = async (req, res) => {
   }
 };
 
-
+const updateGroupName = async (req, res) => {
+  const uid = req.profile._id;
+  const { collectionId } = req.params;
+  const { name } = req.body;
+  try{
+    await FlashcardGroup.updateOne({ uid, _id: collectionId }, { name });
+    res.json({ message: 'succesfully changed name' });
+  }catch(err){
+    console.error(err);
+    res.status(500).json({ message: 'error changing name' });
+  }
+}
 
 
 //cards
@@ -351,7 +380,8 @@ const dueCardCounts = async (req, res) => {
 
 
 export default { 
-  createCardGroup, 
+  createCardGroup,
+  deleteGroup, 
   createCard,
   updateCard, 
   getGroups, 
@@ -362,5 +392,6 @@ export default {
   gradeCard,
   deleteCard,
   dueCardCounts,
-  getCard 
+  getCard,
+  updateGroupName 
 }

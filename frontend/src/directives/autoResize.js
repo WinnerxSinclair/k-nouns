@@ -14,9 +14,10 @@ export default {
   // binding.value === current text when we pass it in the template
   mounted (el) {
     nextTick(() => resize(el))        // wait until v-model sets the value
-    el.addEventListener('input', () => resize(el))
+    // el.addEventListener('input', () => resize(el))
   },
-  updated (el) { 
+  updated (el) {
+     
     nextTick(() => resize(el))      // run after the new value has rendered
   }
 }

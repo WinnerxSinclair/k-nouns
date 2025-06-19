@@ -18,7 +18,7 @@
               <ul class="flex col ac opacity">
                 <li class="flex ac mt-3" v-for="collection in collectionStore.collections" :key="collection._id">
                   <RouterLink
-                    @click="collectionStore.setIdName(collection._id, collection.name)"
+                    
                     class="collection tac" 
                     :to="`/collection/${collection._id}`"
                   >

@@ -8,7 +8,8 @@ router.get('/:collectionId/cards', flashcardController.getCards);
 router.get('/:collectionId/tags', flashcardController.getGroupTags);
 router.get('/:collectionId', flashcardController.getGroupById);
 router.get('', flashcardController.getGroups);
-
+router.delete('/:collectionId', flashcardController.deleteGroup);
+router.patch('/:collectionId/nameChange', flashcardController.updateGroupName);
 
 
 

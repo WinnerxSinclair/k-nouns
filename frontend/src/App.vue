@@ -29,6 +29,6 @@ const toastStore = useToastStore();
   height: 100%;
 }
 main{
-  margin-top: 4vh;
+  margin-top: 1vh;
 }
 </style>

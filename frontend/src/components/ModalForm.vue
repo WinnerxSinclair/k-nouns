@@ -15,15 +15,22 @@
 <script setup>
 import ModalTransition from './widgets/ModalTransition.vue';
 import TheOverlay from './widgets/TheOverlay.vue';
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { vFocus } from '../directives/vFocus.js';
 
 const emit = defineEmits(['hide', 'submit'])
 const props = defineProps({
   label: { type: String, default: 'Name' },
-  show: Boolean
+  show: Boolean,
+  prefill: { type: String, default: '' }
 });
+
+
 const name = ref('');
+
+watch(() => props.show, (v) => {
+  if(v) name.value = props.prefill ?? ''
+});
 
 function emitSubmit(){
   let payload = name.value;

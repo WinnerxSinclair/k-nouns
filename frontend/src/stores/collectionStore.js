@@ -6,9 +6,7 @@ export const useCollectionStore = defineStore('collection', () => {
   const colTags = ref([]);
   const collections = ref([]);
   const collectionMap = ref({});
-  function setIdName(id, name){
-    collectionMap.value[id] = name;
-  }
+
   function getColName(id){
     return collectionMap[id];
   }
@@ -93,7 +91,7 @@ export const useCollectionStore = defineStore('collection', () => {
     selectedCollections,
     selectedTags,
 
-    setIdName,
+    
     getColName,
     store_fetchTags, 
     store_fetchCollectionTags,

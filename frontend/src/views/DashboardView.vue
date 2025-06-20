@@ -2,8 +2,8 @@
   <div class="collections-view-root m0a">
     <TheHeader header="Dashboard" />
     <div class="flex">      
-      <button class="m0a block" @click="showForm.collection = true">+ Create New Collection</button>
-      <button class="m0a block" @click="showForm.tag = true">+ Create New Tag</button>
+      <button class="m0a block" @click="modals.addCollection = true">+ Create New Collection</button>
+      <button class="m0a block" @click="modals.addTag = true">+ Create New Tag</button>
     </div>
           
 
@@ -18,7 +18,7 @@
               <ul class="flex col ac opacity">
                 <li class="flex ac mt-3" v-for="collection in collectionStore.collections" :key="collection._id">
                   <RouterLink
-                    
+                    @click="collectionStore.setIdName(collection._id, collection.name)"
                     class="collection tac" 
                     :to="`/collection/${collection._id}`"
                   >
@@ -43,39 +43,90 @@
           </div>
         </ContentLoadedTransition>
       </div>
-    </div>       
+    </div>
+    <table>
+
+      <thead>
+        <tr>
+          <th>Collections</th>
+          <th >Edit</th>
+          <th >Del.</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="collection in collectionStore.collections" :key="collection._id">
+          <td class="col-name" scope="row">
+            <RouterLink :to="`/collection/${collection._id}`" @click="collectionStore.setIdName(collection._id, collection.name)">
+              {{ collection.name }}
+            </RouterLink>
+          </td>
+          <td class="td-c">
+            <button @click="handleEditColClick(collection._id, collection.name)">
+              <img src="../assets/pencil.png" alt="">
+            </button>
+          </td>
+          <td class="td-c">
+            <button @click="handleDeleteColClick(collection._id, collection.name)">
+              <img src="../assets/delete.png" alt="">
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ModalForm
+      label="Collection Name" 
+      :show="modals.addCollection" 
+      @submit="handleCreateCollection" 
+      @hide="modals.addCollection = false" 
+    />
+    <ModalForm
+      label="Tag" 
+      :show="modals.addTag" 
+      @submit="handleCreateTag" 
+      @hide="modals.addTag = false" 
+    />
+    <ModalForm 
+      @submit="handleUpdateColName" 
+      @hide="modals.editColName = false" 
+      :show="modals.editColName" 
+      :prefill="collectionName"
+      btnText="Update Name" 
+    /> 
+
+    <TransitionOverlay :show="modals.deleteCol" @hide="modals.deleteCol = false">
+      <Confirmation 
+        @cancel="modals.deleteCol = false"
+        @confirm="handleCollectionDelete" 
+        heading="Confirm Deletion" 
+        :message="`Delete collection ${collectionName} and all cards in it?`" 
+      />
+    </TransitionOverlay>
+
+      
   </div>
-
-  <ModalForm
-    label="Collection Name" 
-    :show="showForm.collection" 
-    @submit="handleCreateCollection" 
-    @hide="showForm.collection = false" 
-  />
-
-  <ModalForm
-    label="Tag" 
-    :show="showForm.tag" 
-    @submit="handleCreateTag" 
-    @hide="showForm.tag = false" 
-  />
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { createCardGroup, createTag } from '../api/api.js';
+import { createCardGroup, createTag, deleteCollection, updateCollectionName } from '../api/api.js';
 import ModalForm from '../components/ModalForm.vue';
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
 import TheHeader from '../components/TheHeader.vue'
+import TransitionOverlay from '../components/TransitionOverlay.vue';
+import Confirmation from '../components/alerts/Confirmation.vue';
 import { RouterLink } from 'vue-router';
 import { useCollectionStore } from '../stores/collectionStore.js';
 import { useToastStore } from '../stores/toastStore.js';
 const collectionStore = useCollectionStore();
 const toastStore = useToastStore();
-const showForm = ref({
-  collection: false,
-  tag: false
+const modals = ref({
+  addCollection: false,
+  addTag: false,
+  deleteCol: false,
+  editColName: false
 });
+const collectionName = ref('');
+const collectionId = ref(null);
 const isLoading = ref(true);
 const submitting = ref(false);
 
@@ -86,7 +137,7 @@ async function handleCreateCollection(name){
   try{
     await createCardGroup({ name });
     await collectionStore.store_fetchCollections();
-    showForm.value.collection = false;
+    modals.value.addCollection = false;
     toastStore.createToast(`Collection ${name} Created`);
   }catch(err){
     console.log(err);
@@ -95,13 +146,58 @@ async function handleCreateCollection(name){
   }
 }
 
+function selectCol(colId, colName){
+  collectionName.value = colName;
+  collectionId.value = colId;
+}
+function handleEditColClick(colId, colName){
+  selectCol(colId, colName);
+  modals.value.editColName = true;
+}
+function handleDeleteColClick(colId, colName){
+  selectCol(colId, colName);
+  modals.value.deleteCol = true;
+}
+
+async function handleCollectionDelete(){
+  if(submitting.value) return;
+  submitting.value = true;
+  try{
+    await deleteCollection(collectionId.value);
+    collectionName.value = '';
+    collectionId.value = null;
+    await collectionStore.store_fetchCollections();
+    modals.value.deleteCol = false;
+  }catch(err){
+    console.error(err);
+  }finally{
+    submitting.value = false;
+  }
+}
+async function handleUpdateColName(name){
+  if(submitting.value) return;
+  submitting.value = true;
+  try{
+    await updateCollectionName(collectionId.value, { name });
+    collectionName.value = '';
+    collectionId.value = null;
+    await collectionStore.store_fetchCollections();
+    modals.value.editColName = false;
+  }catch(err){
+    console.error(err);
+  }finally{
+    submitting.value = false;
+  }
+}
+
+
 async function handleCreateTag(name){
   if(submitting.value) return;
   submitting.value = true;
   try{
     await createTag({ tagName: name });
     await collectionStore.store_fetchTags();
-    showForm.value.tag = false;
+    modals.value.addTag = false;
     toastStore.createToast(`Tag ${name} Created`);
   }catch(err){
     console.log(err)
@@ -110,25 +206,52 @@ async function handleCreateTag(name){
   }
 }
 
-
-
 onMounted(async () => {
   try{
-
     await collectionStore.store_fetchCollections();
     await collectionStore.store_fetchTags();
-    let x = new Promise(resolve => {
-      setTimeout(() => resolve('xd'), 500);
-    })
-    await x;
-    isLoading.value = false;
   }catch(err){
     console.error(err);
+  }finally{
+    isLoading.value = false;
   }
 });
 </script>
 
 <style scoped>
+table{
+  border-collapse: collapse;
+  table-layout: auto;
+}
+img{
+  width: 24px;
+}
+.td-c{
+  text-align:center;
+  vertical-align: middle;
+}
+td > button{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.col-name{
+  max-width: 250px;
+  /* white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; */
+  word-wrap: break-word;
+}
+th, td{
+  border: 1px solid #27272760;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  padding: .5rem;
+}
+tr:nth-child(even){
+  background: #f8e1945d;
+}
 .collections-view-root{
   --custom-margin: 3rem;
   max-width: 1280px;

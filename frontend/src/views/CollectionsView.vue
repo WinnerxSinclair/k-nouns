@@ -129,8 +129,8 @@ onMounted(async () => {
   try{
     countInfo.value = await fetchDueCounts();
     console.log(countInfo.value)
-    collectionStore.collections = countInfo.value.collections;
-    collectionStore.tags = countInfo.value.tags; 
+    // collectionStore.collections = countInfo.value.collections;
+    // collectionStore.tags = countInfo.value.tags; 
     collectionStore.setInitialSelected(countInfo.value.colsWithDueCards, countInfo.value.tagsWithDueCards);
     isLoading.value = false;
   }catch(err){
@@ -163,13 +163,16 @@ onMounted(async () => {
   justify-content: center;
 }
 .label-list > li{
-  display:flex;
   margin-top: .9rem;
 }
-
+.label-list > :first-child, .label-row{
+  display: flex;
+  gap: 1rem;
+}
 .label-list > :first-child > :first-child,
-label > span:is(:first-child){
+.label-row > :first-child{
   width: 200px;
+  word-wrap: break-word;
 }
 .label-list > li:is(:first-child){
   padding: .3rem 1rem;
@@ -190,7 +193,7 @@ label > span:is(:first-child){
 }
 .label-row{
   display:flex;
-
+  align-items: center;
   padding: .3rem 1rem;
   width: 100%;
 }

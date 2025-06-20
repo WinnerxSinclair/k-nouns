@@ -21,7 +21,7 @@ const routes = [
     component: RegisterView
   },
   {
-    path: '/collection/:id/entry',
+    path: '/collection/:colId/entry',
     component: EntryView,
     props: true,
     meta: { requiresAuth: true, requiresVerify: true }  

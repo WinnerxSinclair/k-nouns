@@ -11,6 +11,9 @@ export const useCollectionStore = defineStore('collection', () => {
     return collectionMap[id];
   }
 
+  function setIdName(id, name){
+    collectionMap.value[id] = name;
+  }
   const collectionsIds = computed(() => collections.value.map((col) => col._id));
   const tagNames = computed(() => tags.value.map((tag) => tag.name));
 
@@ -91,7 +94,7 @@ export const useCollectionStore = defineStore('collection', () => {
     selectedCollections,
     selectedTags,
 
-    
+    setIdName,
     getColName,
     store_fetchTags, 
     store_fetchCollectionTags,

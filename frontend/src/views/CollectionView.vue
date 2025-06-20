@@ -1,5 +1,5 @@
 <template>
-  <div class="collection-root">
+  <div class="collection-root" v-if="!loading && collectionName">
     <div class="flex jfe">
       <div class="flex col gap-0">
         <DynamicButton 
@@ -9,7 +9,7 @@
           @pressed="modals.deleteCol = true" 
         />
         <DynamicButton
-          v-if="collectionName" 
+           
           styles="edit" 
           type="button" 
           text="Edit Name" 
@@ -31,7 +31,9 @@
       @submit="handleUpdateName" 
       @hide="modals.editColName = false" 
       :show="modals.editColName" 
-      :prefill="collectionName" 
+      :prefill="collectionName"
+      
+      btnText="Update Name" 
     />
     
     <TheHeader :header="collectionName" :mBot="0" />
@@ -45,18 +47,17 @@
         <li class="flex jsb ac" v-for="(card, i) in cards" :key="card._id">
           <RouterLink :to="`/card/${card._id}`" class="card-link flex jsb">
             {{ card.front }}
- 
-          </RouterLink>
-          
+          </RouterLink>        
         </li>
       </ul>
     </ContentLoadedTransition>
   </div>
+  <div class="tac fs-500" v-else-if="!loading && !collectionName">This Collection Doesn't Exist</div>
 </template>
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { fetchCards, deleteCard, deleteCollection, updateCollectionName, fetchCollectionById } from '../api/api';
+import { fetchCards, deleteCollection, updateCollectionName } from '../api/api';
 import { useCollectionStore } from '../stores/collectionStore';
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
 import DynamicButton from '../components/buttons/DynamicButton.vue';
@@ -70,8 +71,8 @@ const props = defineProps({
   colId: String,
 });
 
-
-const collectionName = ref('');
+const collectionStore = useCollectionStore();
+const collectionName = computed(() => collectionStore.collectionMap[props.colId]);
 
 const modals = ref({
   deleteCol: false,
@@ -79,22 +80,12 @@ const modals = ref({
 });
 
 const cards = ref([]);
-
-async function handleCardDelete(id, i){
-  try{
-    await deleteCard(id);
-    cards.value.splice(i, 1);
-  }catch(err){
-    console.error(err);
-  }finally{
-
-  }
-}
+const loading = ref(true);
 
 async function handleUpdateName(name){
   try{
     await updateCollectionName(props.colId, { name });
-    collectionName.value = name;
+    collectionStore.setIdName(props.colId, name);
   }catch(err){
     console.error(err);
   }
@@ -103,7 +94,8 @@ async function handleUpdateName(name){
 async function handleCollectionDelete(){
   try{
     await deleteCollection(props.colId);
-    router.push('/dashboard');
+    delete collectionStore.collectionMap[props.colId];
+    router.replace('/dashboard');
   }catch(err){
     console.error(err);
   }
@@ -112,12 +104,17 @@ async function handleCollectionDelete(){
 onMounted(async () => {
   try{
     const response_cards = await fetchCards(props.colId);
-    const col = await fetchCollectionById(props.colId);
-    collectionName.value = col.name;
+    
+    if(!collectionName.value){
+      let name = await collectionStore.store_fetchCollectionById(props.colId);
+      collectionStore.setIdName(props.colId, name);
+    }
     cards.value = response_cards;
 
   }catch(err){
     console.error(err);
+  }finally{
+    loading.value = false;
   }
 })
 </script>

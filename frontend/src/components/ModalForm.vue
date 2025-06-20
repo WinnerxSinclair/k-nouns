@@ -6,7 +6,7 @@
           <label>{{ label }}</label>
           <input class="fs-500" v-focus type="text" v-model="name">
         </div>
-        <button class="mt-3" :disabled="name === ''">Create</button>
+        <button class="mt-3" :disabled="name === ''">{{ btnText }}</button>
       </form>
     </TheOverlay>
   </ModalTransition>
@@ -22,7 +22,8 @@ const emit = defineEmits(['hide', 'submit'])
 const props = defineProps({
   label: { type: String, default: 'Name' },
   show: Boolean,
-  prefill: { type: String, default: '' }
+  prefill: { type: String, default: '' },
+  btnText: { type: String, default: 'Create' }
 });
 
 

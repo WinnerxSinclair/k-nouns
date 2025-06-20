@@ -90,9 +90,9 @@ import ModalForm from '../components/ModalForm.vue'
 import FlatButton from '../components/buttons/FlatButton.vue'
 
 const props = defineProps({
-  id: String
+  colId: String
 });
-const collectionName = computed(() => collectionStore.collectionMap[props.id]);
+const collectionName = computed(() => collectionStore.collectionMap[props.colId]);
 const collectionStore = useCollectionStore();
 
 const form = ref({
@@ -176,13 +176,13 @@ const saveEntry = async () => {
     form.value.tags = Array.from(tags.value);
   }
   let payload = {
-    group_id: props.id,
+    group_id: props.colId,
     ...form.value,
   }
 
   try{
-    await createCard(props.id, payload);
-    await collectionStore.store_fetchCollectionTags(props.id);
+    await createCard(props.colId, payload);
+    await collectionStore.store_fetchCollectionTags(props.colId);
   }catch(err){
     console.error(err);
   }finally{
@@ -192,8 +192,8 @@ const saveEntry = async () => {
 
 onMounted(async () => {
   if(!collectionName.value){
-    let name = await collectionStore.store_fetchCollectionById(props.id);
-    collectionStore.setIdName(props.id, name);
+    let name = await collectionStore.store_fetchCollectionById(props.colId);
+    collectionStore.setIdName(props.colId, name);
   }
   if(!collectionStore.tags.length){
     await collectionStore.store_fetchTags();

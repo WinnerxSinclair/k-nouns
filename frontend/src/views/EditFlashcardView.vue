@@ -1,9 +1,19 @@
 <template>
-  <div class="flex col ac grow" >
+  <div class="flex col ac grow" v-if="!loading && form">
     
-    <TheHeader header="Edit Entry" />
+    <div class="flex jfe">
+      
+        <DynamicButton 
+          styles="delete" 
+          type="button" 
+          text="Delete Card" 
+          @pressed="handleCardDelete" 
+        />
+      
+    </div>
+    <TheHeader header="Edit Card" />
     
-    <form @submit.prevent="saveEntry" v-if="form" > 
+    <form @submit.prevent="saveEntry" > 
       <TheTextarea 
         v-model="form.context" 
         label="Context" 
@@ -77,11 +87,12 @@
     <ModalForm label="Tag" :show="showTagForm" @hide="showTagForm = false" @submit="addTagLocal" />
    
   </div>
+  <div class="tac fs-500" v-else-if="!loading && !form">Problem getting card or card doesn't exist.</div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { translate, explain } from '../api/api.js'
+import { translate, explain, deleteCard } from '../api/api.js'
 import { useCollectionStore } from '../stores/collectionStore.js'
 import { createTag, updateCard } from '../api/api.js'
 import { fetchCard } from '../api/api.js'
@@ -91,8 +102,8 @@ import TheOverlay from '../components/widgets/TheOverlay.vue'
 import TheSpinner from '../components/widgets/TheSpinner.vue'
 import ModalForm from '../components/ModalForm.vue'
 import FlatButton from '../components/buttons/FlatButton.vue'
-
-
+import DynamicButton from '../components/buttons/DynamicButton.vue'
+import router from '../router'
 
 const props = defineProps({
   cardId: String
@@ -107,9 +118,20 @@ const explainLoading = ref(false);
 const savingForm = ref(false);
 const errMsg = ref(null);
 const showTagForm = ref(false);
+const loading = ref(true);
 
 const tags = ref(new Set());
 
+async function handleCardDelete(){
+  try{
+    await deleteCard(props.cardId);
+    router.replace(`/collection/${form.value.group_id}`)
+  }catch(err){
+    console.error(err);
+  }finally{
+
+  }
+}
 const translateClicked = async () => {
   const { front, context } = form.value;
   const body = {
@@ -190,7 +212,6 @@ onMounted(async () => {
   if(!collectionStore.tags.length){
     await collectionStore.store_fetchTags();
   }
-  
   try{
     const card = await fetchCard(props.cardId);
     
@@ -202,6 +223,8 @@ onMounted(async () => {
     tags.value = new Set(card.tags);
   }catch(err){
     console.error(err);
+  }finally{
+    loading.value = false;
   }
    
 });

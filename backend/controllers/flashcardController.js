@@ -59,6 +59,7 @@ const getGroupById = async (req, res) => {
   const { collectionId } = req.params;
   try{
     const group = await FlashcardGroup.findOne({ _id: collectionId, uid }).lean();
+    if(!group) return res.status(404).json({ message: 'Collection dont exist' });
     res.json(group);
   }catch(err){
     console.error(err);
@@ -251,6 +252,8 @@ const getCard = async (req, res) => {
   const uid = req.profile._id;
   try{
     const card = await Flashcard.findOne({ _id: cardId, uid }).select('back context explanation front group_id pairId tags');
+    
+    if(!card) return res.status(404).json({ message: 'Card not found' });
     res.json(card);
   }catch(err){
     console.error(err);

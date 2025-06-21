@@ -5,8 +5,8 @@
       <div>{{ message }}</div>
     </div> 
     <div class="flex jsb">
-      <button @click="$emit('confirm')" class="c-btn confirm-btn">Confirm</button>
-      <button @click="$emit('cancel')" class="c-btn cancel-btn">Cancel</button>
+      <button type="button" @click="$emit('confirm')" class="c-btn confirm-btn">Confirm</button>
+      <button type="button" @click="$emit('cancel')" class="c-btn cancel-btn">Cancel</button>
     </div>
   </div>
 </template>

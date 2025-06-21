@@ -8,7 +8,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { gradeCard, fetchCardBatch } from '../api/api.js'
+import { gradeCard, getCardBatch } from '../api/api.js'
 import Flashcard from '../components/Flashcard.vue'
 import { on as onBus } from '../helpers/bus.js'
 import { useCollectionStore } from '../stores/collectionStore.js'
@@ -26,7 +26,7 @@ const noMoreCards = ref(false);
 async function getBatch() {
   loading.value = true;
   try {
-    const { cards } = await fetchCardBatch({ 
+    const { cards } = await getCardBatch({ 
       want: 10, 
       collections: collectionStore.selectedFilters.collections, 
       tags: collectionStore.selectedFilters.tags,

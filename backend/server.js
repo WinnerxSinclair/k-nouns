@@ -10,6 +10,7 @@ import cardRoutes from './routes/cardRoutes.js'
 import claudeRoutes from './routes/claudeRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import reviewRoutes from './routes/reviewRoutes.js'
+import tagRoutes from './routes/tagRoutes.js'
 import { authenticateToken } from './middleware/authenticateToken.js'
 
 dotenv.config();
@@ -65,6 +66,7 @@ app.use('/api/cards', authenticateToken, cardRoutes);
 app.use('/api/ai', authenticateToken, claudeRoutes)
 app.use('/api/user', authenticateToken, userRoutes);
 app.use('/api/review', authenticateToken, reviewRoutes);
+app.use('/api/tags', authenticateToken, tagRoutes);
 
 
 

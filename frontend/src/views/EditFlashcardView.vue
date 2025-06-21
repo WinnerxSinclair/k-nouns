@@ -92,10 +92,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { translate, explain, deleteCard } from '../api/api.js'
+import { translate, explain, deleteCard, getCard, createTag, updateCard } from '../api/api.js'
 import { useCollectionStore } from '../stores/collectionStore.js'
-import { createTag, updateCard } from '../api/api.js'
-import { fetchCard } from '../api/api.js'
 import TheHeader from '../components/TheHeader.vue'
 import TheTextarea from '../components/TheTextarea.vue'
 import TheOverlay from '../components/widgets/TheOverlay.vue'
@@ -180,7 +178,7 @@ const addTagLocal = async (tag) => {
   submitting.value = true;
   try{
     await createTag({ tagName: tag });
-    await collectionStore.store_fetchTags();
+    await collectionStore.fetchTags();
     showTagForm.value = false;
   }catch(err){
     console.error(err);
@@ -200,7 +198,7 @@ const saveEntry = async () => {
 
   try{
     await updateCard(props.cardId, payload);
-    // await collectionStore.store_fetchCollectionTags(props.id);
+    // await collectionStore.fetchCollectionTags(props.id);
   }catch(err){
     console.error(err);
   }finally{
@@ -210,10 +208,10 @@ const saveEntry = async () => {
 
 onMounted(async () => {
   if(!collectionStore.tags.length){
-    await collectionStore.store_fetchTags();
+    await collectionStore.fetchTags();
   }
   try{
-    const card = await fetchCard(props.cardId);
+    const card = await getCard(props.cardId);
     
     form.value = { 
       ...card,

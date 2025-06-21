@@ -2,30 +2,64 @@
   <div class="collections-view-root m0a">
     <TheHeader header="Dashboard" />
     <div class="flex">      
-      <button class="m0a block" @click="modals.addCollection = true">+ Create New Collection</button>
-      <button class="m0a block" @click="modals.addTag = true">+ Create New Tag</button>
+      <button class="m0a block create-btn" @click="modals.addCollection = true">+ Create New Collection</button>
+      <button class="m0a block create-btn" @click="modals.addTag = true">+ Create New Tag</button>
     </div>
           
 
     <div class="filler-margin"></div>
     
-    <div class="test-grid ">
+    <div class="big-flex">
       
         <div v-if="collectionStore.collections.length">
           <h2 class="tac">Collections</h2>
           <ContentLoadedTransition>
             <div v-show="!isLoading">
-              <ul class="flex col ac opacity">
-                <li class="flex ac mt-3" v-for="collection in collectionStore.collections" :key="collection._id">
-                  <RouterLink
-                    @click="collectionStore.setIdName(collection._id, collection.name)"
-                    class="collection tac" 
-                    :to="`/collection/${collection._id}`"
-                  >
-                    {{ collection.name }}
-                  </RouterLink>
-                </li>
-              </ul>
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Collection</th>
+                    <th scope="col">Edit</th>
+                    <th scope="col">Del.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="collection in collectionStore.collections" :key="collection._id">
+                    <td class="col-name">
+                      <RouterLink
+                        class="col-name-link" 
+                        :to="`/collection/${collection._id}`" 
+                        @click="collectionStore.setIdName(collection._id, collection.name)"
+                      >
+                        {{ collection.name }}
+                      </RouterLink>
+                    </td>
+                    <td class="td-c">
+                      <button 
+                        :aria-label="`Edit collection name: ${collection.name}`" 
+                        @click="handleEditColClick(collection._id, collection.name)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                          height="24px" 
+                          viewBox="0 0 24 24" 
+                          width="24px" 
+                          fill="#000000"
+                        >
+                          <path d="M0 0h24v24H0z" fill="none"/><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        </svg>
+                      </button>
+                    </td>
+                    <td class="td-c">
+                      <button 
+                        :aria-label="`Delete collection: ${collection.name}`"
+                        @click="handleDeleteColClick(collection._id, collection.name)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </ContentLoadedTransition>
         </div>
@@ -35,44 +69,43 @@
         <h2 class="tac">Tags</h2>
         <ContentLoadedTransition>
           <div v-show="!isLoading">        
-            <ul class="flex col ac">
-              <li class="flex ac mt-3" v-for="tag in collectionStore.tags" :key="tag">
-                <div class="tags tac">{{ tag }}</div>
-              </li>      
-            </ul>
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Tag</th>
+                  <th scope="col">Edit</th>
+                  <th scope="col">Del.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="tag in collectionStore.tags" :key="tag">
+                  <td class="col-name">{{ tag }}</td>
+                  <td class="td-c">
+                    <button :aria-label="`Edit tag name: ${tag}`" @click="handleEditTagClick(tag)">                   
+                      <svg xmlns="http://www.w3.org/2000/svg" 
+                        height="24px" 
+                        viewBox="0 0 24 24" 
+                        width="24px" 
+                        fill="#000000"
+                      >
+                        <path d="M0 0h24v24H0z" fill="none"/><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                      </svg>
+                    </button>
+                  </td>
+                  <td class="td-c">
+                    <button :aria-label="`Delete tag: ${tag}`" @click="handleDeleteTagClick(tag)">
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </ContentLoadedTransition>
       </div>
-    </div>
-    <table>
 
-      <thead>
-        <tr>
-          <th>Collections</th>
-          <th >Edit</th>
-          <th >Del.</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="collection in collectionStore.collections" :key="collection._id">
-          <td class="col-name" scope="row">
-            <RouterLink :to="`/collection/${collection._id}`" @click="collectionStore.setIdName(collection._id, collection.name)">
-              {{ collection.name }}
-            </RouterLink>
-          </td>
-          <td class="td-c">
-            <button @click="handleEditColClick(collection._id, collection.name)">
-              <img src="../assets/pencil.png" alt="">
-            </button>
-          </td>
-          <td class="td-c">
-            <button @click="handleDeleteColClick(collection._id, collection.name)">
-              <img src="../assets/delete.png" alt="">
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    </div>
+
     <ModalForm
       label="Collection Name" 
       :show="modals.addCollection" 
@@ -85,11 +118,13 @@
       @submit="handleCreateTag" 
       @hide="modals.addTag = false" 
     />
+
     <ModalForm 
       @submit="handleUpdateColName" 
       @hide="modals.editColName = false" 
       :show="modals.editColName" 
       :prefill="collectionName"
+      label="Collection Name"
       btnText="Update Name" 
     /> 
 
@@ -98,17 +133,35 @@
         @cancel="modals.deleteCol = false"
         @confirm="handleCollectionDelete" 
         heading="Confirm Deletion" 
-        :message="`Delete collection ${collectionName} and all cards in it?`" 
+        :message="`Delete collection '${collectionName}' and all cards in it?`" 
       />
     </TransitionOverlay>
 
-      
+    <ModalForm 
+      @submit="handleUpdateTagName" 
+      @hide="modals.editTagName = false" 
+      :show="modals.editTagName" 
+      :prefill="tag"
+      label="Tag Name"
+      btnText="Update Name" 
+    /> 
+
+    <TransitionOverlay :show="modals.deleteTag" @hide="modals.deleteTag = false">
+      <Confirmation 
+        @cancel="modals.deleteTag = false"
+        @confirm="handleTagDelete" 
+        heading="Confirm Deletion" 
+        :message="`Delete tag '${tag}'`" 
+      />
+    </TransitionOverlay>     
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { createCardGroup, createTag, deleteCollection, updateCollectionName } from '../api/api.js';
+import { createCardGroup, createTag, deleteCollection, 
+         updateCollectionName, updateTagName, deleteTag 
+       } from '../api/api.js';
 import ModalForm from '../components/ModalForm.vue';
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
 import TheHeader from '../components/TheHeader.vue'
@@ -123,10 +176,13 @@ const modals = ref({
   addCollection: false,
   addTag: false,
   deleteCol: false,
-  editColName: false
+  editColName: false,
+  deleteTag: false,
+  editTagName: false
 });
 const collectionName = ref('');
 const collectionId = ref(null);
+const tag = ref('');
 const isLoading = ref(true);
 const submitting = ref(false);
 
@@ -136,7 +192,7 @@ async function handleCreateCollection(name){
   submitting.value = true;
   try{
     await createCardGroup({ name });
-    await collectionStore.store_fetchCollections();
+    await collectionStore.fetchCollections();
     modals.value.addCollection = false;
     toastStore.createToast(`Collection ${name} Created`);
   }catch(err){
@@ -159,6 +215,15 @@ function handleDeleteColClick(colId, colName){
   modals.value.deleteCol = true;
 }
 
+function handleEditTagClick(tagName){
+  tag.value = tagName;
+  modals.value.editTagName = true;
+}
+function handleDeleteTagClick(tagName){
+  tag.value = tagName;
+  modals.value.deleteTag = true;
+}
+
 async function handleCollectionDelete(){
   if(submitting.value) return;
   submitting.value = true;
@@ -166,7 +231,7 @@ async function handleCollectionDelete(){
     await deleteCollection(collectionId.value);
     collectionName.value = '';
     collectionId.value = null;
-    await collectionStore.store_fetchCollections();
+    await collectionStore.fetchCollections();
     modals.value.deleteCol = false;
   }catch(err){
     console.error(err);
@@ -181,8 +246,38 @@ async function handleUpdateColName(name){
     await updateCollectionName(collectionId.value, { name });
     collectionName.value = '';
     collectionId.value = null;
-    await collectionStore.store_fetchCollections();
+    await collectionStore.fetchCollections();
     modals.value.editColName = false;
+  }catch(err){
+    console.error(err);
+  }finally{
+    submitting.value = false;
+  }
+}
+
+async function handleUpdateTagName(newName){
+  if(submitting.value) return;
+  submitting.value = true;
+  try{
+    await updateTagName(tag.value, { newName });
+    tag.value = '';
+    await collectionStore.fetchTags();
+    modals.value.editTagName = false;
+  }catch(err){
+    console.error(err);
+  }finally{
+    submitting.value = false;
+  }
+}
+
+async function handleTagDelete(){
+  if(submitting.value) return;
+  submitting.value = true;
+  try{
+    await deleteTag(tag.value);
+    tag.value = '';
+    await collectionStore.fetchTags();
+    modals.value.deleteTag = false;
   }catch(err){
     console.error(err);
   }finally{
@@ -196,7 +291,7 @@ async function handleCreateTag(name){
   submitting.value = true;
   try{
     await createTag({ tagName: name });
-    await collectionStore.store_fetchTags();
+    await collectionStore.fetchTags();
     modals.value.addTag = false;
     toastStore.createToast(`Tag ${name} Created`);
   }catch(err){
@@ -208,8 +303,10 @@ async function handleCreateTag(name){
 
 onMounted(async () => {
   try{
-    await collectionStore.store_fetchCollections();
-    await collectionStore.store_fetchTags();
+    await Promise.all([
+      collectionStore.fetchCollections(),
+      collectionStore.fetchTags()
+    ]);
   }catch(err){
     console.error(err);
   }finally{
@@ -219,6 +316,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.create-btn{
+  border-radius: 9em;
+  border: 1px solid rgba(241, 200, 142, 0.034);
+  border-bottom: 2px solid rgba(241, 199, 142, 0.61);
+  cursor: pointer;
+  padding: .2em .8em;
+  background: rgba(253, 240, 217, 0.486);
+}
+.big-flex{
+  display: flex;
+  gap: 5rem 12rem;
+  flex-flow: row wrap;
+  justify-content: center;
+}
 table{
   border-collapse: collapse;
   table-layout: auto;
@@ -237,46 +348,33 @@ td > button{
 }
 .col-name{
   max-width: 250px;
+  min-width: 150px;
   /* white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; */
   word-wrap: break-word;
 }
+.col-name-link{
+  width: 100%;
+  display: inline-block;
+}
+.col-name-link:hover{
+  background: rgb(245, 220, 137);
+  transition: all .2s ease;
+}
 th, td{
-  border: 1px solid #27272760;
-  border-left: none;
-  border-right: none;
-  border-top: none;
+  border-bottom: 1px solid #27272760;
   padding: .5rem;
 }
+th:is(:first-child){
+  text-align: left;
+}
 tr:nth-child(even){
-  background: #f8e1945d;
+  background: #c2c2c233;
 }
 .collections-view-root{
   --custom-margin: 3rem;
   max-width: 1280px;
-}
-.test-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(50ch, 1fr));
-  justify-items: center;
-  gap: 2rem 0;
-}
-
-.collection, .tags{
-  width: 150px;
-  max-width: 150px;
-  word-wrap: break-word;
-  background: rgb(255, 190, 69);
-  border-radius: 1rem;
-  padding: .2em .5em;
-  display: block;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--text-color);
-}
-.tags{
-  background: rgb(129, 223, 129);
 }
 
 ul{
@@ -286,20 +384,7 @@ ul{
 .selected-btn{
   background: rgb(98, 112, 196);
 }
-.study-btn{
-  text-decoration: none;
-  color: var(--text-color);
-  padding: .5em 1em;
-  font-size: 1.2rem;
-  background: var(--btn-bg-pop);
-  color: var(--btn-color-pop);
-  border-radius: 9999px;
-  border-bottom: 3px solid black;
-  display: inline-block;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  transition: opacity 1s ease;
-}
+
 .or-and-btn-group, .filler-margin{
   margin-top: var(--custom-margin);
 }

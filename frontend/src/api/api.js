@@ -44,7 +44,7 @@ export const deleteCollection = async (q) => {
   const response = await api.delete(`/api/card_collections/${q}`);
   return response.data;
 }
-export const fetchCollections = async (q) => {
+export const getCollections = async (q) => {
   const response = await api.get('/api/card_collections', {
     params: q
   });
@@ -52,7 +52,7 @@ export const fetchCollections = async (q) => {
   return response.data;
 }
 
-export const fetchCollectionById = async (q) => {
+export const getCollectionById = async (q) => {
   const response = await api.get(`/api/card_collections/${q}`);
   return response.data;
 }
@@ -62,12 +62,12 @@ export const updateCollectionName = async (q, payload) => {
   return response.data;
 }
 
-export const fetchCards = async (q) => {
+export const getCards = async (q) => {
   const response = await api.get(`/api/card_collections/${q}/cards`);
   return response.data;
 }
 
-export const fetchCollectionTags = async (q) => {
+export const getCollectionTags = async (q) => {
   const response = await api.get(`/api/card_collections/${q}/tags`);
   return response.data;
 }
@@ -82,7 +82,7 @@ export const deleteCard = async (q) => {
   return response.data;
 }
 
-export const fetchCard = async (q) => {
+export const getCard = async (q) => {
   const response = await api.get(`/api/cards/${q}`);
   return response.data;
 }
@@ -93,7 +93,7 @@ export const updateCard = async (q, payload) => {
 }
 
 //review -  related to flashcards
-export const fetchReviewBatch = async (payload) => {
+export const getReviewBatch = async (payload) => {
   const response = await api.post(`/api/review`, payload);
   return response.data;
 }
@@ -103,12 +103,12 @@ export const gradeCard = async (payload) => {
   return response.data;
 }
 
-export const fetchCardBatch = async (payload) => {
+export const getCardBatch = async (payload) => {
   const response = await api.post('/api/review/batch', payload);
   return response.data;
 }
 
-export const fetchDueCounts = async () => {
+export const getDueCounts = async () => {
   const response = await api.get('/api/review/cards/due');
   return response.data;
 }
@@ -121,7 +121,17 @@ export const createTag = async (input) => {
   return response.data;
 }
 
-export const fetchTags = async() => {
+export const updateTagName = async (q, payload) => {
+  const response = await api.patch(`/api/tags/${q}`, payload);
+  return response.data;
+}
+
+export const deleteTag = async (q) => {
+  const response = await api.delete(`/api/tags/${q}`);
+  return response.data;
+}
+
+export const getTags = async() => {
   const response = await api.get('/api/user/tags');
   return response.data;
 }

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from 'vue'
-import { fetchTags, fetchCollectionTags, fetchCollections, fetchCollectionById } from "../api/api";
+import { getTags, getCollectionTags, getCollections, getCollectionById } from "../api/api";
 export const useCollectionStore = defineStore('collection', () => {
   const tags = ref([]);
   const colTags = ref([]);
@@ -19,36 +19,36 @@ export const useCollectionStore = defineStore('collection', () => {
 
   const queryConditional = ref('$or');
 
-  async function store_fetchCollectionById(id){
+  async function fetchCollectionById(id){
     try{
-      const response = await fetchCollectionById(id);
+      const response = await getCollectionById(id);
       return response.name;
     }catch(err){
       console.error(err);
     }
   }
 
-  async function store_fetchTags(){
+  async function fetchTags(){
     try{
-      const response = await fetchTags();
+      const response = await getTags();
       tags.value = response;
     }catch(err){
       console.error('error getting tags', err);
     }
   }
 
-  async function store_fetchCollectionTags(q){
+  async function fetchCollectionTags(q){
     try{
-      const response = await fetchCollectionTags(q);
+      const response = await getCollectionTags(q);
       colTags.value = response;
     }catch(err){
       console.error('error getting collection tags', err);
     }
   }
 
-  async function store_fetchCollections(){ 
+  async function fetchCollections(){ 
     try{
-      const response = await fetchCollections();
+      const response = await getCollections();
       collections.value = response;
     }catch(err){
       console.error(err);
@@ -96,10 +96,10 @@ export const useCollectionStore = defineStore('collection', () => {
 
     setIdName,
     getColName,
-    store_fetchTags, 
-    store_fetchCollectionTags,
-    store_fetchCollections,
-    store_fetchCollectionById,
+    fetchTags, 
+    fetchCollectionTags,
+    fetchCollections,
+    fetchCollectionById,
     selectAllCollections,
     selectAllTags,
     deselectAll,

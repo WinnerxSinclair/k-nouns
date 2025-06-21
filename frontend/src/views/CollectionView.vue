@@ -57,7 +57,7 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { fetchCards, deleteCollection, updateCollectionName } from '../api/api';
+import { getCards, deleteCollection, updateCollectionName } from '../api/api';
 import { useCollectionStore } from '../stores/collectionStore';
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
 import DynamicButton from '../components/buttons/DynamicButton.vue';
@@ -103,10 +103,10 @@ async function handleCollectionDelete(){
 
 onMounted(async () => {
   try{
-    const response_cards = await fetchCards(props.colId);
+    const response_cards = await getCards(props.colId);
     
     if(!collectionName.value){
-      let name = await collectionStore.store_fetchCollectionById(props.colId);
+      let name = await collectionStore.fetchCollectionById(props.colId);
       collectionStore.setIdName(props.colId, name);
     }
     cards.value = response_cards;

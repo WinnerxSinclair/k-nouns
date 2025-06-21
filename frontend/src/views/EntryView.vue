@@ -161,7 +161,7 @@ const addTagLocal = async (tag) => {
   submitting.value = true;
   try{
     await createTag({ tagName: tag });
-    await collectionStore.store_fetchTags();
+    await collectionStore.fetchTags();
     showTagForm.value = false;
   }catch(err){
     console.error(err);
@@ -182,7 +182,7 @@ const saveEntry = async () => {
 
   try{
     await createCard(props.colId, payload);
-    await collectionStore.store_fetchCollectionTags(props.colId);
+    await collectionStore.fetchCollectionTags(props.colId);
   }catch(err){
     console.error(err);
   }finally{
@@ -192,11 +192,11 @@ const saveEntry = async () => {
 
 onMounted(async () => {
   if(!collectionName.value){
-    let name = await collectionStore.store_fetchCollectionById(props.colId);
+    let name = await collectionStore.fetchCollectionById(props.colId);
     collectionStore.setIdName(props.colId, name);
   }
   if(!collectionStore.tags.length){
-    await collectionStore.store_fetchTags();
+    await collectionStore.fetchTags();
   }
 });
 </script>

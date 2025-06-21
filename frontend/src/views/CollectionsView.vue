@@ -114,7 +114,7 @@ import { onMounted, ref, computed } from 'vue'
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
 import { RouterLink } from 'vue-router';
 import { useCollectionStore } from '../stores/collectionStore.js';
-import { fetchDueCounts } from '../api/api.js';
+import { getDueCounts } from '../api/api.js';
 
 const collectionStore = useCollectionStore();
 const isLoading = ref(true);
@@ -127,7 +127,7 @@ let oneExists = computed(() => collections.value.length || tags.value.length);
 
 onMounted(async () => {
   try{
-    countInfo.value = await fetchDueCounts();
+    countInfo.value = await getDueCounts();
     console.log(countInfo.value)
     // collectionStore.collections = countInfo.value.collections;
     // collectionStore.tags = countInfo.value.tags; 

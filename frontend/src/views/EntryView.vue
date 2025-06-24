@@ -176,7 +176,7 @@ const saveEntry = async () => {
     form.value.tags = Array.from(tags.value);
   }
   let payload = {
-    group_id: props.colId,
+    groupId: props.colId,
     ...form.value,
   }
 

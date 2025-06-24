@@ -148,6 +148,7 @@ button{
   background: none;
   border: none;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  cursor: pointer;
 }
 .btn-alt{
   font-family:'Courier New', Courier, monospace;

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const flashcardSchema = new mongoose.Schema({
   uid:         { type: mongoose.Schema.Types.ObjectId, required: true, index: true },
-  group_id:    { type: mongoose.Schema.Types.ObjectId, 
+  groupId:    { type: mongoose.Schema.Types.ObjectId, 
                  required: true,
                  index: true 
                },

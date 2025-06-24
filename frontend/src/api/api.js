@@ -131,10 +131,21 @@ export const deleteTag = async (q) => {
   return response.data;
 }
 
-export const getTags = async() => {
+export const getTags = async () => {
   const response = await api.get('/api/user/tags');
   return response.data;
 }
 
 
+//share
+
+export const createOrUpdateShare = async (payload) => {
+  const response = await api.patch('/api/share', payload);
+  return response.data;
+}
+
+export const importShare = async (payload) => {
+  const response = await api.post('/api/share', payload);
+  return response.data;
+}
 export default api;

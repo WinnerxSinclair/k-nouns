@@ -11,6 +11,7 @@ import claudeRoutes from './routes/claudeRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import reviewRoutes from './routes/reviewRoutes.js'
 import tagRoutes from './routes/tagRoutes.js'
+import shareRoutes from './routes/shareRoutes.js'
 import { authenticateToken } from './middleware/authenticateToken.js'
 
 dotenv.config();
@@ -67,15 +68,19 @@ app.use('/api/ai', authenticateToken, claudeRoutes)
 app.use('/api/user', authenticateToken, userRoutes);
 app.use('/api/review', authenticateToken, reviewRoutes);
 app.use('/api/tags', authenticateToken, tagRoutes);
+app.use('/api/share', authenticateToken, shareRoutes)
 
 
+app.use((err, _req, res, _next) => {
+  console.error(err);          // still logs stack
+  res.status(500).json({ message: 'internal server error' });
+});
+// const distPath = path.join(process.cwd(), 'dist');
+// app.use(express.static(distPath));
 
-const distPath = path.join(process.cwd(), 'dist');
-app.use(express.static(distPath));
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'))
-})
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(distPath, 'index.html'))
+// })
 
 
 mongoose.connect(process.env.MONGO_URI)

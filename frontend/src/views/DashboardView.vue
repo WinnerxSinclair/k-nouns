@@ -1,5 +1,12 @@
 <template>
   <div class="collections-view-root m0a">
+    <button @click="modals.importCol = true">Import Collection</button>
+    <ModalForm 
+      :show="modals.importCol"
+      @hide="modals.importCol = false"
+      @submit="handleImportCol"
+      label="Enter Collection Code"
+    />
     <TheHeader header="Dashboard" />
     <div class="flex">      
       <button class="m0a block create-btn" @click="modals.addCollection = true">+ Create New Collection</button>
@@ -160,7 +167,8 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { createCardGroup, createTag, deleteCollection, 
-         updateCollectionName, updateTagName, deleteTag 
+         updateCollectionName, updateTagName, deleteTag,
+         importShare 
        } from '../api/api.js';
 import ModalForm from '../components/ModalForm.vue';
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
@@ -178,7 +186,8 @@ const modals = ref({
   deleteCol: false,
   editColName: false,
   deleteTag: false,
-  editTagName: false
+  editTagName: false,
+  importCol: false,
 });
 const collectionName = ref('');
 const collectionId = ref(null);
@@ -285,7 +294,6 @@ async function handleTagDelete(){
   }
 }
 
-
 async function handleCreateTag(name){
   if(submitting.value) return;
   submitting.value = true;
@@ -301,6 +309,19 @@ async function handleCreateTag(name){
   }
 }
 
+
+async function handleImportCol(_id){
+  if(submitting.value) return;
+  submitting.value = true;
+  try{
+    const x = await importShare({ _id });
+    console.log(x);
+  }catch(err){
+    console.error(err);
+  }finally{
+    submitting.value = false;
+  }
+}
 onMounted(async () => {
   try{
     await Promise.all([
@@ -370,7 +391,7 @@ th:is(:first-child){
   text-align: left;
 }
 tr:nth-child(even){
-  background: #c2c2c233;
+  background: #c2c2c21c;
 }
 .collections-view-root{
   --custom-margin: 3rem;

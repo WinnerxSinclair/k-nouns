@@ -3,7 +3,7 @@ import Flashcard from "../models/flashcard.js";
 import FlashcardGroup from "../models/cardGroup.js";
 import User from "../models/user.js";
 import mongoose from 'mongoose'
-import flashcard from "../models/flashcard.js";
+
 const { startSession } = mongoose
 
 //groups
@@ -31,7 +31,7 @@ const deleteGroup = async (req, res) => {
   try{
     session.startTransaction();
     await FlashcardGroup.deleteOne({ uid, _id: collectionId }, { session });
-    await Flashcard.deleteMany({ uid, group_id: collectionId }, { session });
+    await Flashcard.deleteMany({ uid, groupId: collectionId }, { session });
     await session.commitTransaction();
     res.json({ message: 'delete group and cards' });
   }catch(err){
@@ -97,12 +97,12 @@ const updateGroupName = async (req, res) => {
 //cards
 const createCard = async (req, res) => {
   const { 
-    group_id, context, front, back,
+    groupId, context, front, back,
     explanation, mirror, tags = []
   } = req.body;
   const uid = req.profile._id;
 
-  if(!group_id || !back){
+  if(!groupId || !back){
     return res.status(400).json({ message: 'Group ID and back are required' });
   }
 
@@ -114,7 +114,7 @@ const createCard = async (req, res) => {
     const srsSeed = { reps: 0, interval: 0, ease: 2.5, due: new Date(), lapses: 0 };
     const baseDoc = {
       uid,
-      group_id,
+      groupId,
       context,
       explanation,
       tags,
@@ -132,7 +132,7 @@ const createCard = async (req, res) => {
 
    
     if(tags.length){
-      await FlashcardGroup.findByIdAndUpdate(group_id, { $addToSet: { tags: { $each: tags} } }, { session });
+      await FlashcardGroup.findByIdAndUpdate(groupId, { $addToSet: { tags: { $each: tags} } }, { session });
     }
     await session.commitTransaction();
     res.status(201).json({ message: 'flashcard added' });
@@ -151,7 +151,7 @@ const createCard = async (req, res) => {
 const getCards = async (req, res) => {
   const { collectionId } = req.params;
   try{
-    const cards = await Flashcard.find({ uid: req.profile._id, group_id: collectionId }).lean();
+    const cards = await Flashcard.find({ uid: req.profile._id, groupId: collectionId }).lean();
     res.json(cards);
   }catch(err){
     console.error(err);
@@ -221,7 +221,7 @@ const getCardBatch = async (req, res) => {
     const cardBatch = await Flashcard.find({
       uid: uid,
       due: { $lte: Date.now() + 5*60*1000 },
-      [conditional]: [{ group_id: { $in: collections } }, {tags: { $in: tags }}]
+      [conditional]: [{ groupId: { $in: collections } }, {tags: { $in: tags }}]
     })
     .sort({ due: 1 })
     .limit(want)
@@ -251,7 +251,7 @@ const getCard = async (req, res) => {
   const { cardId } = req.params;
   const uid = req.profile._id;
   try{
-    const card = await Flashcard.findOne({ _id: cardId, uid }).select('back context explanation front group_id pairId tags');
+    const card = await Flashcard.findOne({ _id: cardId, uid }).select('back context explanation front groupId pairId tags');
     
     if(!card) return res.status(404).json({ message: 'Card not found' });
     res.json(card);
@@ -262,7 +262,7 @@ const getCard = async (req, res) => {
 }
 
 const updateCard = async (req, res) => {
-  const { _id, front, back, context, explanation, tags, mirror, pairId, group_id } = req.body;
+  const { _id, front, back, context, explanation, tags, mirror, pairId, groupId } = req.body;
   const uid = req.profile._id;
   const session = await startSession();
   try{
@@ -271,7 +271,7 @@ const updateCard = async (req, res) => {
       const newPairId = crypto.randomUUID();
       const srsSeed = { reps: 0, interval: 0, ease: 2.5, due: new Date(), lapses: 0 };
       await Flashcard.updateOne({ _id, uid }, { front, back, context, explanation, tags, pairId: newPairId }, { session });
-      await Flashcard.insertOne({ uid, group_id, front: back, back: front, context, explanation, tags, pairId: newPairId, ...srsSeed }, { session });
+      await Flashcard.insertOne({ uid, groupId, front: back, back: front, context, explanation, tags, pairId: newPairId, ...srsSeed }, { session });
     }else if(pairId && mirror){
       await Flashcard.updateOne({ _id, uid }, { front, back, context, explanation, tags }, { session });
       await Flashcard.updateOne({ _id: { $ne: _id }, pairId, uid }, { front: back, back: front, context, explanation, tags }, { session });
@@ -305,7 +305,7 @@ const dueCardCounts = async (req, res) => {
       {
         $facet: {
           byCollection: [
-            { $group: { _id: '$group_id', due: { $sum: 1 } } }
+            { $group: { _id: '$groupId', due: { $sum: 1 } } }
           ],
           byTags: [
             { $unwind: '$tags' },

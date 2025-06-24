@@ -123,7 +123,7 @@ const tags = ref(new Set());
 async function handleCardDelete(){
   try{
     await deleteCard(props.cardId);
-    router.replace(`/collection/${form.value.group_id}`)
+    router.replace(`/collection/${form.value.groupId}`)
   }catch(err){
     console.error(err);
   }finally{

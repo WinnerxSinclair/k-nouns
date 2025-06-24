@@ -8,15 +8,32 @@
           text="Delete Collection" 
           @pressed="modals.deleteCol = true" 
         />
-        <DynamicButton
-           
+        <DynamicButton   
           styles="edit" 
           type="button" 
           text="Edit Name" 
           @pressed="modals.editColName = true" 
         />
+        <DynamicButton   
+          styles="edit" 
+          type="button" 
+          text="Share Code" 
+          @pressed="handleShareCodePress" 
+        />
       </div>
     </div>
+
+    <TransitionOverlay :show="modals.shareCol" @hide="modals.shareCol = false">
+      <div class="flex col gap share-code-wrap">
+        <label for="share-code">Share code:</label>
+        <div class="flex ac gap">          
+          <code class="fs-500" id="share-code">{{ shareCode }}</code>
+          <button aria-label="Copy share code" onclick="navigator.clipboard.writeText(document.getElementById('share-code').textContent)">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+          </button>
+        </div>
+      </div>
+    </TransitionOverlay>
 
     <TransitionOverlay :show="modals.deleteCol" @hide="modals.deleteCol = false">
       <Confirmation 
@@ -57,7 +74,7 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { getCards, deleteCollection, updateCollectionName } from '../api/api';
+import { getCards, deleteCollection, updateCollectionName, createOrUpdateShare } from '../api/api';
 import { useCollectionStore } from '../stores/collectionStore';
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
 import DynamicButton from '../components/buttons/DynamicButton.vue';
@@ -73,10 +90,12 @@ const props = defineProps({
 
 const collectionStore = useCollectionStore();
 const collectionName = computed(() => collectionStore.collectionMap[props.colId]);
+const shareCode = ref(null);
 
 const modals = ref({
   deleteCol: false,
-  editColName: false
+  editColName: false,
+  shareCol: false
 });
 
 const cards = ref([]);
@@ -89,6 +108,29 @@ async function handleUpdateName(name){
   }catch(err){
     console.error(err);
   }
+}
+
+async function handleShareCodePress(){
+  if(shareCode.value){
+    modals.value.shareCol = true;
+    return;
+  }
+  shareCode.value = crypto.randomUUID();
+  console.log(props.colId);
+
+  try{
+    const doc = await createOrUpdateShare({ 
+      code: shareCode.value, 
+      groupId: props.colId, 
+    });
+    console.log(doc);
+    shareCode.value = doc._id;
+    modals.value.shareCol = true;
+  }catch(err){
+    shareCode.value = null;
+    console.error(err);
+  }
+  
 }
 
 async function handleCollectionDelete(){
@@ -120,6 +162,12 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.share-code-wrap{
+  background: white;
+  padding: 2rem 2rem;
+  border-radius: 1rem;
+}
+
 .collection-root{
   max-width: 160ch;
   margin: 0 auto;

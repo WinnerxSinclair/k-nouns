@@ -1,7 +1,7 @@
 <template>
-  <div class="collections-view-root">
+  <div class="decks-view-root">
     
-    <div class="tac">
+    <div class="tac sticky-study">
       <ContentLoadedTransition>
         <div v-if="!isLoading" class="flex ac jc gap">
           <p  class="fs-500">{{ totalDue }}</p>
@@ -11,27 +11,27 @@
 
       <div v-if="isLoading" class="placeholder-1"></div>
       <RouterLink 
-        :class="{'disabled': isLoading || !collectionStore.somethingSelected}" 
+        :class="{'disabled': isLoading || !deckStore.somethingSelected}" 
         class="study-btn btn-main" 
         to="/review"
       >
         {{ isLoading ? 'Loading...' : 'Study Due Cards' }}
       </RouterLink>
 
-      <p v-if="!oneExists && !isLoading">Nothing Exists, create collections and cards in the Dashboard</p> 
+      <p v-if="!oneExists && !isLoading">Nothing Exists, create decks and cards in the Dashboard</p> 
     </div>
     
     <ContentLoadedTransition>
       <div v-if="bothExist" class="flex ac jc or-and-btn-group" >
         <button 
-          @click="collectionStore.queryConditional = '$or'"
-          :class="{'selected-btn': collectionStore.queryConditional === '$or'}"      
+          @click="deckStore.queryConditional = '$or'"
+          :class="{'selected-btn': deckStore.queryConditional === '$or'}"      
         >
           OR
         </button>
         <button 
-          @click="collectionStore.queryConditional = '$and'"
-          :class="{'selected-btn': collectionStore.queryConditional === '$and'}"
+          @click="deckStore.queryConditional = '$and'"
+          :class="{'selected-btn': deckStore.queryConditional === '$and'}"
         >
           AND
         </button>      
@@ -45,29 +45,29 @@
       <div v-if="!isLoading" class="ul-container">
         <fieldset>
           <div class="flex jc all-none-btn-wrapper">
-            <button @click="collectionStore.selectAllCollections">All</button>
-            <button @click="collectionStore.deselectAll('collections')">None</button>
+            <button @click="deckStore.selectAllDecks(deckIds)">All</button>
+            <button @click="deckStore.deselectAll('decks')">None</button>
           </div>
           <ul class="label-list">
             <li>
-              <h4 class="fs-500 bold">Collections</h4>
+              <h4 class="fs-500 bold">Decks</h4>
               <h4 class="fs-500 bold">Due</h4>
             </li>
             <hr>
             <li 
-              v-for="collection in collections" 
-              :key="collection._id"
-              :class="{'selected': collectionStore.selectedCollections.has(collection._id)}"
+              v-for="deck in decks" 
+              :key="deck._id"
+              :class="{'selected': deckStore.selectedDecks.has(deck._id)}"
             >
               <input 
                 type="checkbox" 
-                :value="collection._id" 
-                v-model="collectionStore.selectedFilters.collections"
-                :id="collection._id"
+                :value="deck._id" 
+                v-model="deckStore.selectedFilters.decks"
+                :id="deck._id"
               >
-              <label class="label-row" :for="collection._id">
-                <span>{{ collection.name }}</span>
-                <span>{{ collection.dueCount }}</span>
+              <label class="label-row" :for="deck._id">
+                <span>{{ deck.name }}</span>
+                <span>{{ deck.dueCount }}</span>
               </label>          
             </li>
           </ul>
@@ -75,8 +75,8 @@
 
         <fieldset>
           <div class="flex jc all-none-btn-wrapper">
-            <button @click="collectionStore.selectAllTags">All</button>
-            <button @click="collectionStore.deselectAll('tags')">None</button>
+            <button @click="deckStore.selectAllTags(tagNames)">All</button>
+            <button @click="deckStore.deselectAll('tags')">None</button>
           </div>
           <ul class="label-list">
             <li>
@@ -87,13 +87,13 @@
             <li 
               v-for="tag in tags" 
               :key="tag.name"
-              :class="{'selected': collectionStore.selectedTags.has(tag.name)}"
+              :class="{'selected': deckStore.selectedTags.has(tag.name)}"
             >
                               
               <input 
                 type="checkbox" 
                 :value="tag.name" 
-                v-model="collectionStore.selectedFilters.tags"
+                v-model="deckStore.selectedFilters.tags"
                 :id="tag.name"
               >
               <label class="label-row" :for="tag.name">
@@ -113,25 +113,27 @@
 import { onMounted, ref, computed } from 'vue'
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
 import { RouterLink } from 'vue-router';
-import { useCollectionStore } from '../stores/collectionStore.js';
+import { useDeckStore } from '../stores/deckStore.js';
 import { getDueCounts } from '../api/api.js';
 
-const collectionStore = useCollectionStore();
+const deckStore = useDeckStore();
 const isLoading = ref(true);
-let countInfo = ref(null);
-let collections = computed(() => countInfo.value?.collections ?? []);
-let tags = computed(() => countInfo.value?.tags ?? []);
-let totalDue = computed(() => countInfo.value?.totalDue ?? 0);
-let bothExist = computed(() => collections.value.length && tags.value.length);
-let oneExists = computed(() => collections.value.length || tags.value.length);
+const countInfo = ref(null);
+const decks = computed(() => countInfo.value?.decks ?? []);
+const deckIds = computed(() => decks.value.map((deck) => deck._id));
+const tags = computed(() => countInfo.value?.tags ?? []);
+const tagNames = computed(() => tags.value.map((t) => t.name));
+const totalDue = computed(() => countInfo.value?.totalDue ?? 0);
+const bothExist = computed(() => decks.value.length && tags.value.length);
+const oneExists = computed(() => decks.value.length || tags.value.length);
 
 onMounted(async () => {
   try{
     countInfo.value = await getDueCounts();
     console.log(countInfo.value)
-    // collectionStore.collections = countInfo.value.collections;
-    // collectionStore.tags = countInfo.value.tags; 
-    collectionStore.setInitialSelected(countInfo.value.colsWithDueCards, countInfo.value.tagsWithDueCards);
+    
+    deckStore.setInitialSelected(countInfo.value.decksWithDueCards, countInfo.value.tagsWithDueCards);
+   
     isLoading.value = false;
   }catch(err){
     console.error(err);
@@ -209,6 +211,7 @@ onMounted(async () => {
 }
 
 input[type="checkbox"]{
+  
   position: absolute;
   width: 1px;
   height: 1px;
@@ -220,7 +223,7 @@ input[type="checkbox"]{
   clip: rect(0 0 0 0);
 }
 
-.collections-view-root{
+.decks-view-root{
   --custom-margin: 3rem;
 }
 
@@ -231,7 +234,12 @@ input[type="checkbox"]{
   gap: 2rem 0;
 }
 
-
+.sticky-study{
+  position: sticky;
+  top: 0px;
+  z-index: 2;
+  background: var(--bg-color);
+}
 form{
   padding: 2rem;
   background:white;

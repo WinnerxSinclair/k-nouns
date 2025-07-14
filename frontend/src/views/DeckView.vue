@@ -1,11 +1,11 @@
 <template>
-  <div class="collection-root" v-if="!loading && collectionName">
+  <div class="deck-root" v-if="!loading && deckName">
     <div class="flex jfe">
       <div class="flex col gap-0">
         <DynamicButton 
           styles="delete" 
           type="button" 
-          text="Delete Collection" 
+          text="Delete Deck" 
           @pressed="modals.deleteCol = true" 
         />
         <DynamicButton   
@@ -38,9 +38,9 @@
     <TransitionOverlay :show="modals.deleteCol" @hide="modals.deleteCol = false">
       <Confirmation 
         @cancel="modals.deleteCol = false"
-        @confirm="handleCollectionDelete" 
+        @confirm="handleDeckDelete" 
         heading="Confirm Deletion" 
-        :message="`Delete collection ${collectionName} and all cards in it?`" 
+        :message="`Delete deck ${deckName} and all cards in it?`" 
       />
     </TransitionOverlay>
 
@@ -48,19 +48,19 @@
       @submit="handleUpdateName" 
       @hide="modals.editColName = false" 
       :show="modals.editColName" 
-      :prefill="collectionName"
+      :prefill="deckName"
       
       btnText="Update Name" 
     />
     
-    <TheHeader :header="collectionName" :mBot="0" />
+    <TheHeader :header="deckName" :mBot="0" />
 
-    <div class="tac" v-show="collectionName">
-      <RouterLink :to="`/collection/${colId}/entry`" class="new-card-btn">New Card</RouterLink>
+    <div class="tac" v-show="deckName">
+      <RouterLink :to="`/deck/${deckId}/entry`" class="new-card-btn">New Card</RouterLink>
     </div>
 
     <ContentLoadedTransition>      
-      <ul v-if="cards.length && collectionName">
+      <ul v-if="cards.length && deckName">
         <li class="flex jsb ac" v-for="(card, i) in cards" :key="card._id">
           <RouterLink :to="`/card/${card._id}`" class="card-link flex jsb">
             {{ card.front }}
@@ -69,13 +69,13 @@
       </ul>
     </ContentLoadedTransition>
   </div>
-  <div class="tac fs-500" v-else-if="!loading && !collectionName">This Collection Doesn't Exist</div>
+  <div class="tac fs-500" v-else-if="!loading && !deckName">This Deck Doesn't Exist</div>
 </template>
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { getCards, deleteCollection, updateCollectionName, createOrUpdateShare } from '../api/api';
-import { useCollectionStore } from '../stores/collectionStore';
+import { getCards, deleteDeck, updateDeckName, createOrUpdateShare } from '../api/api';
+import { useDeckStore } from '../stores/deckStore';
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue';
 import DynamicButton from '../components/buttons/DynamicButton.vue';
 import TheHeader from '../components/TheHeader.vue';
@@ -85,11 +85,11 @@ import ModalForm from '../components/ModalForm.vue';
 import router from '../router'
 
 const props = defineProps({
-  colId: String,
+  deckId: String,
 });
 
-const collectionStore = useCollectionStore();
-const collectionName = computed(() => collectionStore.collectionMap[props.colId]);
+const deckStore = useDeckStore();
+const deckName = computed(() => deckStore.deckMap[props.deckId]);
 const shareCode = ref(null);
 
 const modals = ref({
@@ -103,8 +103,8 @@ const loading = ref(true);
 
 async function handleUpdateName(name){
   try{
-    await updateCollectionName(props.colId, { name });
-    collectionStore.setIdName(props.colId, name);
+    await updateDeckName(props.deckId, { name });
+    deckStore.setIdName(props.deckId, name);
   }catch(err){
     console.error(err);
   }
@@ -116,12 +116,12 @@ async function handleShareCodePress(){
     return;
   }
   shareCode.value = crypto.randomUUID();
-  console.log(props.colId);
+  console.log(props.deckId);
 
   try{
     const doc = await createOrUpdateShare({ 
       code: shareCode.value, 
-      groupId: props.colId, 
+      deckId: props.deckId, 
     });
     console.log(doc);
     shareCode.value = doc._id;
@@ -133,10 +133,10 @@ async function handleShareCodePress(){
   
 }
 
-async function handleCollectionDelete(){
+async function handleDeckDelete(){
   try{
-    await deleteCollection(props.colId);
-    delete collectionStore.collectionMap[props.colId];
+    await deleteDeck(props.deckId);
+    delete deckStore.deckMap[props.deckId];
     router.replace('/dashboard');
   }catch(err){
     console.error(err);
@@ -145,11 +145,11 @@ async function handleCollectionDelete(){
 
 onMounted(async () => {
   try{
-    const response_cards = await getCards(props.colId);
+    const response_cards = await getCards(props.deckId);
     
-    if(!collectionName.value){
-      let name = await collectionStore.fetchCollectionById(props.colId);
-      collectionStore.setIdName(props.colId, name);
+    if(!deckName.value){
+      let name = await deckStore.fetchDeckById(props.deckId);
+      deckStore.setIdName(props.deckId, name);
     }
     cards.value = response_cards;
 
@@ -168,7 +168,7 @@ onMounted(async () => {
   border-radius: 1rem;
 }
 
-.collection-root{
+.deck-root{
   max-width: 160ch;
   margin: 0 auto;
 }

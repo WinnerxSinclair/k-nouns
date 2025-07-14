@@ -4,8 +4,7 @@ const userSchema = new mongoose.Schema({
   uid:          { type: String, required: true, unique: true },
   tokensUsed: {
     type: Number,
-    default: 1500,
-    required: true
+    default: 1250,
   }, 
   tags: { type: [String], default: [] } 
 }, { timestamps: true });

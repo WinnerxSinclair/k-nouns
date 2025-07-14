@@ -1,7 +1,7 @@
 <template>
   <div class="outermost">
-    <TheSidebar />
-
+    <TheHeader />
+  
     <main class="grow rel">
       <Toast />
       <RouterView />
@@ -11,7 +11,7 @@
 
 <script setup>
 import { RouterView } from 'vue-router';
-import TheSidebar from './components/sidebar/TheSidebar.vue';
+import TheHeader from './components/header/TheHeader.vue';
 import Toast from './components/widgets/Toast.vue';
 import { useToastStore } from './stores/toastStore.js';
 
@@ -20,15 +20,19 @@ const toastStore = useToastStore();
 
 <style scoped>
 .outermost{
-  display:flex;
   height: 100%;
+  display:flex;
+  flex-direction: column;
 }
 .sidebar{
   background:rgb(17, 19, 46);
   color:white;
-  height: 100%;
+ 
 }
 main{
-  margin-top: 1vh;
+  display:flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 </style>

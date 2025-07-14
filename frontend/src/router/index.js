@@ -3,13 +3,13 @@ import { useAuthStore } from '../stores/authStore.js';
 import EntryView from '../views/EntryView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue';
-import CollectionsView from '../views/CollectionsView.vue';
-import CollectionView from '../views/CollectionView.vue';
+import DecksView from '../views/DecksView.vue';
+import DeckView from '../views/DeckView.vue';
 import StudyView from '../views/StudyView.vue';
 import CheckEmailView from '../views/CheckEmailView.vue'
 import VerifyEmail from '../views/VerifyEmail.vue';
 import DashsboardView from '../views/DashboardView.vue';
-import EditFlashcardView from '../views/EditFlashcardView.vue';
+import CreateView from '../views/CreateView.vue';
 
 const routes = [
   {
@@ -21,14 +21,14 @@ const routes = [
     component: RegisterView
   },
   {
-    path: '/collection/:colId/entry',
+    path: '/deck/:deckId/entry',
     component: EntryView,
     props: true,
     meta: { requiresAuth: true, requiresVerify: true }  
   },
   {
-    path: '/collections',
-    component: CollectionsView,
+    path: '/decks',
+    component: DecksView,
     meta: { requiresAuth: true, requiresVerify: true }  
   },
   {
@@ -37,20 +37,25 @@ const routes = [
     meta: { requiresAuth: true, requiresVerify: true }
   },
   {
-    path: '/collection/:colId',
-    component: CollectionView,
+    path: '/deck/:deckId',
+    component: DeckView,
     props: true,
     meta: { requiresAuth: true, requiresVerify: true }  
   },
   {
     path: '/card/:cardId',
-    component: EditFlashcardView,
-    props: true,
+    component: DashsboardView,
+    // props: true,
     meta: { requiresAuth: true, requiresVerify: true }
   },
   {
     path: '/review',
     component: StudyView,
+    meta: { requiresAuth: true, requiresVerify: true }
+  },
+  {
+    path: '/create',
+    component: CreateView,
     meta: { requiresAuth: true, requiresVerify: true }
   },
   {
@@ -85,11 +90,11 @@ router.beforeEach((to, from, next) => {
   }
 
   if((to.path === '/verify-email' || to.path === '/check-email') && verified){
-    return next('/collections')
+    return next('/decks')
   }
 
   if ((to.path === '/login' || to.path === '/register') && loggedIn) {
-    return next('/collections')
+    return next('/decks')
   }
   next()
 })

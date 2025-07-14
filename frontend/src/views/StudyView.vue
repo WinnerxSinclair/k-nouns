@@ -11,9 +11,9 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { gradeCard, getCardBatch } from '../api/api.js'
 import Flashcard from '../components/Flashcard.vue'
 import { on as onBus } from '../helpers/bus.js'
-import { useCollectionStore } from '../stores/collectionStore.js'
+import { useDeckStore } from '../stores/deckStore.js'
 
-const collectionStore = useCollectionStore();
+const deckStore = useDeckStore();
 
 const currentCard = ref(null);
 const queue       = ref([]);
@@ -28,9 +28,9 @@ async function getBatch() {
   try {
     const { cards } = await getCardBatch({ 
       want: 10, 
-      collections: collectionStore.selectedFilters.collections, 
-      tags: collectionStore.selectedFilters.tags,
-      conditional: collectionStore.queryConditional 
+      decks: deckStore.selectedFilters.decks, 
+      tags: deckStore.selectedFilters.tags,
+      conditional: deckStore.queryConditional 
     });
     console.log(cards)
     queue.value.push(...cards)

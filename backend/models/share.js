@@ -2,8 +2,8 @@ import mongoose from 'mongoose'
 
 const shareSchema = new mongoose.Schema({
   _id: String,
-  groupId: mongoose.Schema.Types.ObjectId,
-  groupName: String,
+  deckId: mongoose.Schema.Types.ObjectId,
+  deckName: String,
   ownerId: mongoose.Schema.Types.ObjectId,
   expiresAt: Date
 }, { timestamps: true });

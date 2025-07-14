@@ -12,7 +12,11 @@ const toastStore = useToastStore();
 </script>
 
 <style scoped>
-
+.toast{
+  background: black;
+  color: white;
+  padding: .5em;
+}
 .toast-stack{
   position: absolute;
   top: 1rem;
@@ -25,6 +29,5 @@ const toastStore = useToastStore();
 
 .toast-enter-from, .toast-leave-to{
   opacity: 0;
-  transform: translateY(-25px);
 }
 </style>

@@ -39,7 +39,7 @@ async function handleSubmit(formData) {
   try {
     // call the store’s login action
     await authStore.login(formData.email, formData.password)
-    router.push('/collections')
+    router.push('/decks')
   } catch (err) {
     console.error('Login failed', err)
     // you can surface an error message here

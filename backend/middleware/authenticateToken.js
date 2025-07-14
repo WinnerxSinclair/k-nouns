@@ -19,6 +19,7 @@ export async function authenticateToken(req, res, next) {
       {},            // no-op update
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
+   
     req.profile = profile;
     
     next()

@@ -33,47 +33,58 @@ export const explain = async (input) => {
 
 
 
-//flashcards
+//cards
 
-export const createCardGroup = async (input) => {
-  const response = await api.post('/api/card_collections', input);
+export const createDeck = async (input) => {
+  const response = await api.post('/api/decks', input);
   return response.data;
 }
 
-export const deleteCollection = async (q) => {
-  const response = await api.delete(`/api/card_collections/${q}`);
+export const deleteDeck = async (q) => {
+  const response = await api.delete(`/api/decks/${q}`);
   return response.data;
 }
-export const getCollections = async (q) => {
-  const response = await api.get('/api/card_collections', {
+export const getDecks = async (q) => {
+  const response = await api.get('/api/decks', {
     params: q
   });
 
   return response.data;
 }
 
-export const getCollectionById = async (q) => {
-  const response = await api.get(`/api/card_collections/${q}`);
+export const getDeckById = async (q) => {
+  const response = await api.get(`/api/decks/${q}`);
   return response.data;
 }
 
-export const updateCollectionName = async (q, payload) => {
-  const response = await api.patch(`/api/card_collections/${q}/nameChange`, payload);
+export const exportDeck = async (payload) => {
+  const response = await api.post('/api/decks/export', payload, { responseType: 'blob' });
+  return response.data;
+}
+
+export const importDeck = async (payload) => {
+  console.log(payload)
+  const response = await api.post('/api/decks/import', payload);
+  return response.data;
+}
+
+export const updateDeckName = async (q, payload) => {
+  const response = await api.patch(`/api/decks/${q}/nameChange`, payload);
   return response.data;
 }
 
 export const getCards = async (q) => {
-  const response = await api.get(`/api/card_collections/${q}/cards`);
+  const response = await api.get(`/api/decks/${q}/cards`);
   return response.data;
 }
 
-export const getCollectionTags = async (q) => {
-  const response = await api.get(`/api/card_collections/${q}/tags`);
+export const getDeckTags = async (q) => {
+  const response = await api.get(`/api/decks/${q}/tags`);
   return response.data;
 }
 
 export const createCard = async (q, input) => {
-  const response = await api.post(`/api/card_collections/${q}/cards`, input);
+  const response = await api.post(`/api/decks/${q}/cards`, input);
   return response.data;
 }
 
@@ -92,7 +103,12 @@ export const updateCard = async (q, payload) => {
   return response.data;
 }
 
-//review -  related to flashcards
+export const getDashboardCards = async (payload) => {
+  const response = await api.post('/api/cards', payload);
+  return response.data;
+}
+
+//review -  related to cards
 export const getReviewBatch = async (payload) => {
   const response = await api.post(`/api/review`, payload);
   return response.data;
@@ -113,8 +129,12 @@ export const getDueCounts = async () => {
   return response.data;
 }
 
+export const bulkOps = async (payload) => {
+  const response = await api.patch('/api/cards/bulk', payload);
+  return response.data;
+}
 
-//updating usertags - related to flashcards
+//updating usertags - related to cards
 export const createTag = async (input) => {
   console.log(input)
   const response = await api.patch(`/api/user/tags`, input);
@@ -137,7 +157,7 @@ export const getTags = async () => {
 }
 
 
-//share
+//share -- DEPRECATED????
 
 export const createOrUpdateShare = async (payload) => {
   const response = await api.patch('/api/share', payload);
@@ -146,6 +166,13 @@ export const createOrUpdateShare = async (payload) => {
 
 export const importShare = async (payload) => {
   const response = await api.post('/api/share', payload);
+  return response.data;
+}
+
+//user (tokens)
+
+export const checkTokens = async () => {
+  const response = await api.get('/api/user/tokens');
   return response.data;
 }
 export default api;

@@ -1,7 +1,7 @@
 <template>
-  <div class="flex col ac grow" v-if="!loading && form">
-    
-    <div class="flex jfe">
+  <div class="abs flex edit-card-wrap col ac grow" v-if="!loading && form">
+    <button class="back-btn">Back (insert arrow)</button>
+    <!-- <div class="flex jfe">
       
         <DynamicButton 
           styles="delete" 
@@ -10,9 +10,9 @@
           @pressed="handleCardDelete" 
         />
       
-    </div>
+    </div> -->
     <TheHeader header="Edit Card" />
-    
+    <TokenCount :tokenCount="userStore.tokens" />
     <form @submit.prevent="saveEntry" > 
       <TheTextarea 
         v-model="form.context" 
@@ -28,7 +28,7 @@
       <FlatButton
         text="Translate"
         type="button" 
-        :disabled="form.back.length || !form.front.length || translateLoading" 
+        :disabled="form.back.length || !form.front.length || translateLoading || !userStore.hasEnough" 
         @pressed="translateClicked" 
       />
       <TheSpinner v-if="translateLoading" />
@@ -42,7 +42,7 @@
       <FlatButton
         text="Explain"
         type="button" 
-        :disabled="form.explanation.length || !form.back.length || explainLoading"
+        :disabled="form.explanation.length || !form.back.length || explainLoading || !userStore.hasEnough"
         @pressed="explainClicked" 
       /> 
       <TheSpinner v-if="explainLoading" />
@@ -68,8 +68,8 @@
         </button>
       </div>
 
-      <ul class="flex gap">
-        <li class="tag-btn-wrapper" v-for="tag in collectionStore.tags" :key="tag">
+      <ul class="flex gap wrap tag-list">
+        <li class="tag-btn-wrapper" v-for="tag in deckStore.tags" :key="tag">
           <button type="button" 
             @click="prepTags(tag)"
             :class="{'selected-tag': tags.has(tag)}"
@@ -93,21 +93,25 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { translate, explain, deleteCard, getCard, createTag, updateCard } from '../api/api.js'
-import { useCollectionStore } from '../stores/collectionStore.js'
+import { useDeckStore } from '../stores/deckStore.js'
+import { useUserStore } from '../stores/userStore.js'
+import { useToastStore } from '../stores/toastStore.js' 
 import TheHeader from '../components/TheHeader.vue'
 import TheTextarea from '../components/TheTextarea.vue'
 import TheOverlay from '../components/widgets/TheOverlay.vue'
 import TheSpinner from '../components/widgets/TheSpinner.vue'
 import ModalForm from '../components/ModalForm.vue'
 import FlatButton from '../components/buttons/FlatButton.vue'
-import DynamicButton from '../components/buttons/DynamicButton.vue'
-import router from '../router'
-
+import TokenCount from '../components/widgets/TokenCount.vue'
+import { useRouter } from 'vue-router'
+const router = useRouter();
 const props = defineProps({
   cardId: String
 });
 
-const collectionStore = useCollectionStore();
+const userStore = useUserStore();
+const deckStore = useDeckStore();
+const toastStore = useToastStore();
 const form = ref(null);
 
 const submitting = ref(false);
@@ -120,10 +124,10 @@ const loading = ref(true);
 
 const tags = ref(new Set());
 
-async function handleCardDelete(){
+async function handleCardDelete(){ //NOT VALID ANYMORE
   try{
     await deleteCard(props.cardId);
-    router.replace(`/collection/${form.value.groupId}`)
+    router.replace(`/deck/${form.value.deckId}`)
   }catch(err){
     console.error(err);
   }finally{
@@ -138,8 +142,13 @@ const translateClicked = async () => {
   }
   translateLoading.value = true;
   try{
+    if(!userStore.hasEnough) return;
+    const recheck = await userStore.fetchTokens();
+    if(recheck <= 0) return;
     const response = await translate(body);
-    form.value.back = response.message;
+    const { message, updatedTokenCount } = response;
+    form.value.back = message;
+    userStore.updateTokenCount(updatedTokenCount);
   }catch(err){
     console.error(err)
   }finally{
@@ -160,9 +169,13 @@ const explainClicked = async () => {
   const { back } = form.value;
   explainLoading.value = true;
   try{
+    if(!userStore.hasEnough) return;
+    const recheck = await userStore.fetchTokens();
+    if(recheck <= 0) return;
     const response = await explain({back});
-    console.log(response)
-    form.value.explanation = response.message;
+    const { message, updatedTokenCount } = response;
+    form.value.explanation = message;
+    userStore.updateTokenCount(updatedTokenCount);
     
   }catch(err){
     console.error(err);
@@ -178,7 +191,7 @@ const addTagLocal = async (tag) => {
   submitting.value = true;
   try{
     await createTag({ tagName: tag });
-    await collectionStore.fetchTags();
+    await deckStore.fetchTags();
     showTagForm.value = false;
   }catch(err){
     console.error(err);
@@ -198,7 +211,10 @@ const saveEntry = async () => {
 
   try{
     await updateCard(props.cardId, payload);
-    // await collectionStore.fetchCollectionTags(props.id);
+    // await deckStore.fetchDeckTags(props.id);
+    router.replace('/dashboard');
+    const toastMsg = 'Card Edited';
+    toastStore.createToast(toastMsg)
   }catch(err){
     console.error(err);
   }finally{
@@ -207,10 +223,14 @@ const saveEntry = async () => {
 }
 
 onMounted(async () => {
-  if(!collectionStore.tags.length){
-    await collectionStore.fetchTags();
+  if(userStore.tokens === null){
+    await userStore.fetchTokens();
+  }
+  if(!deckStore.tags.length){
+    await deckStore.fetchTags();
   }
   try{
+    console.log(props.cardId)
     const card = await getCard(props.cardId);
     
     form.value = { 
@@ -223,14 +243,28 @@ onMounted(async () => {
     console.error(err);
   }finally{
     loading.value = false;
-  }
-   
+  }  
 });
 
 </script>
 
-<style scoped>
 
+
+
+
+
+<style scoped>
+.edit-card-wrap{
+  z-index: 2;
+  width: 100%;
+  background: rgb(255, 253, 247);
+  min-height: 100vh;
+}
+.back-btn{
+  position:absolute;
+  top: 10px;
+  left: 10px;
+}
 .tag-btn-wrapper > button{
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.096);

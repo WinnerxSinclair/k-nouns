@@ -1,11 +1,15 @@
 import express from 'express'
 import mongoose from 'mongoose'
 import cookieParser from 'cookie-parser'
-import path from 'path'
+import morgan from 'morgan'
+import helmet from 'helmet'
+import { v4 as uuid } from 'uuid'
+import { logger } from './logger.js'
+import mongoSanitize from 'express-mongo-sanitize'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import tokenUsageRoutes from './routes/tokenUsageRoutes.js'
-import flashcardGroupRoutes from './routes/flashcardGroupRoutes.js'
+import deckRoutes from './routes/deckRoutes.js'
 import cardRoutes from './routes/cardRoutes.js'
 import claudeRoutes from './routes/claudeRoutes.js'
 import userRoutes from './routes/userRoutes.js'
@@ -23,7 +27,8 @@ app.use(cors({
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
+app.use(helmet());
+app.use(mongoSanitize());
 app.get('/login', (req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
@@ -58,29 +63,33 @@ app.get('/register', (req, res, next) => {
 })
 
 
+app.use((req, res, next) => {
+  req.id = uuid();
+  next();
+});
+
+app.use(morgan(':method :url :status - :response-time ms :req[id]', {
+  stream: { write: msg => logger.info(msg.trim()) }
+}))
 
 
 
 app.use('/api/tokenUsage', tokenUsageRoutes);
-app.use('/api/card_collections', authenticateToken, flashcardGroupRoutes);
+app.use('/api/decks', authenticateToken, deckRoutes);
 app.use('/api/cards', authenticateToken, cardRoutes);
 app.use('/api/ai', authenticateToken, claudeRoutes)
 app.use('/api/user', authenticateToken, userRoutes);
 app.use('/api/review', authenticateToken, reviewRoutes);
 app.use('/api/tags', authenticateToken, tagRoutes);
 app.use('/api/share', authenticateToken, shareRoutes)
-
+app.get('/ping', (_, res) => res.send('pong'));
 
 app.use((err, _req, res, _next) => {
   console.error(err);          // still logs stack
   res.status(500).json({ message: 'internal server error' });
 });
-// const distPath = path.join(process.cwd(), 'dist');
-// app.use(express.static(distPath));
 
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(distPath, 'index.html'))
-// })
+
 
 
 mongoose.connect(process.env.MONGO_URI)
@@ -92,5 +101,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.listen(3000, () => {
   console.log('server urnning')
 })
+
+export default app
 
 

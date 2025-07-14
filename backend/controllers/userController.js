@@ -1,26 +1,27 @@
 import User from '../models/user.js'
+import { asyncHandler } from '../utils/asyncHandler.js';
 
-const addTag = async (req, res) => {
+const addTag = asyncHandler(async (req, res) => {
   const { tagName } = req.body;
-  try{
-    await User.findByIdAndUpdate(req.profile._id, { $addToSet: { tags: tagName } });
   
-    res.status(200).json({ message: 'tag created' });
-  }catch(err){
-    console.error(err);
-    res.status(500).json({ message: 'failed to add tag' });
-  }
-}
+  await User.findByIdAndUpdate(req.profile._id, { $addToSet: { tags: tagName } });
+  
+  res.status(200).json({ message: 'tag created' });
 
-const getTags = async (req, res) => {
-  try{
-    const user = await User.findById(req.profile._id).select('tags').lean();
-    const sortedTags = user.tags.sort((a,b) => a.localeCompare(b));
-    res.json(sortedTags);
-  }catch(err){
-    console.log(err);
-    res.status(500).json({ message: 'failed to get tags' });
-  }
-}
+});
 
-export default { addTag, getTags }
+const getTags = asyncHandler(async (req, res) => {
+  
+  const user = await User.findById(req.profile._id).select('tags').lean();
+  const sortedTags = user.tags.sort((a,b) => a.localeCompare(b));
+  res.json(sortedTags);
+
+});
+
+const checkTokens = asyncHandler(async (req, res) => {
+  const uid = req.profile._id;
+  const { tokensUsed } = await User.findById(uid).select('tokensUsed -_id');
+  return res.json({ tokensUsed });
+})
+
+export default { addTag, getTags, checkTokens }

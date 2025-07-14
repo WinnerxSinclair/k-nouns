@@ -34,6 +34,7 @@
 import { ref, watch } from 'vue'
 import { emit } from '../helpers/bus.js'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { schedule } from '../helpers/seedCalculations.js';
 import ContentLoadedTransition from './widgets/ContentLoadedTransition.vue';
 const props = defineProps({
@@ -57,7 +58,8 @@ watch(() => props.card, () => {
   showBack.value = false;
   showExplanation.value = false;
   if(props.card?.explanation){
-    markedExplanation.value = marked.parse(props.card.explanation);
+    const rawHtml = marked.parse(props.card.explanation);
+    markedExplanation.value = DOMPurify.sanitize(rawHtml);
   }
   if(props.card){
     seedCalculations.value = grades.map((grade) => schedule({

@@ -1,19 +1,19 @@
 import Share from '../models/share.js'
-import FlashcardGroup from '../models/cardGroup.js'
-import Flashcard from '../models/flashcard.js'
+import Deck from '../models/deck.js'
+import Card from '../models/card.js'
 import mongoose from 'mongoose'
 import { asyncHandler } from '../utils/asyncHandler.js';
 const checkShare = asyncHandler(async (req, res) => {
   const uid = req.profile._id;
   const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
   
-  const { code, groupId, ownerId = uid } = req.body;
+  const { code, deckId, ownerId = uid } = req.body;
   console.log(code)
-  console.log(groupId);
+  console.log(deckId);
  
   
   const doc = await Share.findOneAndUpdate(
-    { groupId, ownerId }, 
+    { deckId, ownerId }, 
     { 
       $set: { expiresAt: tomorrow },
       $setOnInsert: { _id: code } 
@@ -35,20 +35,20 @@ const importShare = asyncHandler(async (req, res) => {
      { $match: { _id } },
      {
        $lookup: {
-         from: 'card_groups',
-         localField: 'groupId',
+         from: 'decks',
+         localField: 'deckId',
          foreignField: '_id',
          pipeline: [
            { $project: { _id: 0, name: 1, tags: 1 } }
          ],
-         as: 'groupStuff'
+         as: 'deckStuff'
        }
      },
      {
        $lookup: {
-         from: 'flashcards',
-         localField: 'groupId',
-         foreignField: 'groupId',
+         from: 'cards',
+         localField: 'deckId',
+         foreignField: 'deckId',
          pipeline: [
            { 
              $project: { 
@@ -58,7 +58,7 @@ const importShare = asyncHandler(async (req, res) => {
                ease: { $literal: 2.5 }, 
                due: { $literal: new Date() },
                lapses: { $literal: 0 },
-               groupId: { $literal: customId },
+               deckId: { $literal: customId },
                uid: { $literal: uid }
              } 
            }
@@ -66,21 +66,21 @@ const importShare = asyncHandler(async (req, res) => {
          as: 'cards'
        }
      },
-     { $unwind: '$groupStuff' },
+     { $unwind: '$deckStuff' },
     
-     { $project: { groupName: '$groupStuff.name', tags: '$groupStuff.tags', cards: 1, _id: 0 } }
+     { $project: { deckName: '$deckStuff.name', tags: '$deckStuff.tags', cards: 1, _id: 0 } }
   ]);
 
   
   if(!doc){
-    return res.status(404).json({ message: 'Collection does not exist or share code expired' });
+    return res.status(404).json({ message: 'Deck does not exist or share code expired' });
   }
   
   const session = await mongoose.startSession();
   try{
     session.startTransaction();
-    await FlashcardGroup.insertOne({ _id: customId, name: doc.groupName, tags: doc.tags, uid }, { session });
-    await Flashcard.insertMany(doc.cards, { session });
+    await Deck.insertOne({ _id: customId, name: doc.deckName, tags: doc.tags, uid }, { session });
+    await Card.insertMany(doc.cards, { session });
     await session.commitTransaction();
     res.json({ message: 'success' });
   }catch(err){

@@ -8,8 +8,8 @@
 
 <script setup>
 const props = defineProps({
-  isModal: Boolean
-})
+  isModal: Boolean,
+});
 </script>
 
 <style scoped>
@@ -28,6 +28,5 @@ const props = defineProps({
   background:rgba(0, 0, 0, 0.384);
   backdrop-filter: blur(5px);
 }
-
 
 </style>

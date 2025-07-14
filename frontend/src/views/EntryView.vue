@@ -1,7 +1,8 @@
 <template>
   <div class="flex col ac grow">
-    <div class="fs-500">{{ collectionName }}</div>
+    <div class="fs-500">{{ deckName }}</div>
     <TheHeader header="New Entry" />
+    <TokenCount :tokenCount="userStore.tokens" />
     <form @submit.prevent="saveEntry" > 
       <TheTextarea 
         v-model="form.context" 
@@ -17,9 +18,10 @@
       <FlatButton
         text="Translate"
         type="button" 
-        :disabled="form.back.length || !form.front.length || translateLoading" 
+        :disabled="form.back.length || !form.front.length || translateLoading || !userStore.hasEnough" 
         @pressed="translateClicked" 
       />
+      
       <TheSpinner v-if="translateLoading" />
 
       <TheTextarea 
@@ -31,7 +33,7 @@
       <FlatButton
         text="Explain"
         type="button" 
-        :disabled="form.explanation.length || !form.back.length || explainLoading"
+        :disabled="form.explanation.length || !form.back.length || explainLoading || !userStore.hasEnough"
         @pressed="explainClicked" 
       /> 
       <TheSpinner v-if="explainLoading" />
@@ -58,7 +60,7 @@
       </div>
 
       <ul class="flex gap">
-        <li class="tag-btn-wrapper" v-for="tag in collectionStore.tags" :key="tag">
+        <li class="tag-btn-wrapper" v-for="tag in deckStore.tags" :key="tag">
           <button type="button" 
             @click="prepTags(tag)"
             :class="{'selected-tag': tags.has(tag)}"
@@ -80,7 +82,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { translate, explain } from '../api/api.js'
-import { useCollectionStore } from '../stores/collectionStore.js'
+import { useDeckStore } from '../stores/deckStore.js'
+import { useUserStore } from '../stores/userStore.js'
+import { useToastStore } from '../stores/toastStore.js'
 import { createTag, createCard } from '../api/api.js'
 import TheHeader from '../components/TheHeader.vue'
 import TheTextarea from '../components/TheTextarea.vue'
@@ -88,21 +92,27 @@ import TheOverlay from '../components/widgets/TheOverlay.vue'
 import TheSpinner from '../components/widgets/TheSpinner.vue'
 import ModalForm from '../components/ModalForm.vue'
 import FlatButton from '../components/buttons/FlatButton.vue'
+import TokenCount from '../components/widgets/TokenCount.vue'
 
 const props = defineProps({
-  colId: String
+  deckId: String
 });
-const collectionName = computed(() => collectionStore.collectionMap[props.colId]);
-const collectionStore = useCollectionStore();
+const deckStore = useDeckStore();
+const userStore = useUserStore();
+const toastStore = useToastStore();
+const deckName = computed(() => deckStore.deckMap[props.deckId]);
 
-const form = ref({
+const baseForm = {
   context: '',
   front: '',
   back: '',
   explanation: '',
   mirror: false,
   tags: []
-});
+}
+
+const form = ref({ ...baseForm });
+
 
 const submitting = ref(false);
 const translateLoading = ref(false);
@@ -114,6 +124,7 @@ const showTagForm = ref(false);
 const tags = ref(new Set());
 
 const translateClicked = async () => {
+
   const { front, context } = form.value;
   const body = {
     front, 
@@ -121,8 +132,14 @@ const translateClicked = async () => {
   }
   translateLoading.value = true;
   try{
+    if(!userStore.hasEnough) return;
+    const recheck = await userStore.fetchTokens();
+    if(recheck <= 0) return;
+    
     const response = await translate(body);
-    form.value.back = response.message;
+    const { message, updatedTokenCount } = response;
+    form.value.back = message;
+    userStore.updateTokenCount(updatedTokenCount);
   }catch(err){
     console.error(err)
   }finally{
@@ -140,12 +157,18 @@ function prepTags(tag){
 }
 
 const explainClicked = async () => {
+
   const { back } = form.value;
   explainLoading.value = true;
   try{
+    if(!userStore.hasEnough) return;
+    const recheck = await userStore.fetchTokens();
+    if(recheck <= 0) return;
+
     const response = await explain({back});
-    console.log(response)
-    form.value.explanation = response.message;
+    const { message, updatedTokenCount } = response;
+    form.value.explanation = message;
+    userStore.updateTokenCount(updatedTokenCount);
     
   }catch(err){
     console.error(err);
@@ -161,7 +184,7 @@ const addTagLocal = async (tag) => {
   submitting.value = true;
   try{
     await createTag({ tagName: tag });
-    await collectionStore.fetchTags();
+    await deckStore.fetchTags();
     showTagForm.value = false;
   }catch(err){
     console.error(err);
@@ -176,13 +199,15 @@ const saveEntry = async () => {
     form.value.tags = Array.from(tags.value);
   }
   let payload = {
-    groupId: props.colId,
+    // deckId: props.deckId,
     ...form.value,
   }
-
+  form.value = { ...baseForm };
   try{
-    await createCard(props.colId, payload);
-    await collectionStore.fetchCollectionTags(props.colId);
+    await createCard(props.deckId, payload);
+    // await deckStore.fetchDeckTags(props.deckId); NEED THIS???
+    const toastMsg = 'Card Created';
+    toastStore.createToast(toastMsg);
   }catch(err){
     console.error(err);
   }finally{
@@ -191,12 +216,15 @@ const saveEntry = async () => {
 }
 
 onMounted(async () => {
-  if(!collectionName.value){
-    let name = await collectionStore.fetchCollectionById(props.colId);
-    collectionStore.setIdName(props.colId, name);
+  if(userStore.tokens === null){
+    await userStore.fetchTokens();
   }
-  if(!collectionStore.tags.length){
-    await collectionStore.fetchTags();
+  if(!deckName.value){
+    let name = await deckStore.fetchDeckById(props.deckId);
+    deckStore.setIdName(props.deckId, name);
+  }
+  if(!deckStore.tags.length){
+    await deckStore.fetchTags();
   }
 });
 </script>

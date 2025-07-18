@@ -368,7 +368,7 @@ const deleteCard = async (req, res) => { //I DONT THINK I USE THIS
   }
 }
 
-const getCard = async (req, res) => { //DO I USE THIS??? YES
+const getCard = async (req, res) => { 
   const { cardId } = req.params;
   const uid = req.profile._id;
   try{
@@ -543,6 +543,46 @@ const bulkPatch = asyncHandler( async(req, res) => { //MIGHT NEED TO REDO FOR ZO
   return res.json({ ok: true });
 });
 
+//needs zod still
+const addTag = asyncHandler(async (req, res) => {
+  console.log('xd')
+  const uid = req.profile._id;
+  const { tag, cardIds, pairIds } = req.body;
+  const filter = { uid, $or: [ { _id: { $in: cardIds } }, { pairId: { $in: pairIds } }] };
+  const session = await startSession();
+  try{
+    session.startTransaction();
+    await Card.updateMany(filter, { $addToSet: { tags: tag } }, { session });
+    await User.findByIdAndUpdate(uid, { $addToSet: { tags: tag } },  { session });
+    await session.commitTransaction();
+    res.status(201).json({ message: 'tag added' });
+  }catch(err){
+    console.error(err);
+    session.abortTransaction();
+    next(err);
+  }finally{
+    await session.endSession();
+  }
+});
+
+const removeTag = asyncHandler(async (req, res) => {
+  const uid = req.profile._id;
+  const { tag, cardIds, pairIds } = req.body;
+  const filter = { uid, $or: [ { _id: { $in: cardIds } }, { pairId: { $in: pairIds } }] };
+  await Card.updateMany(filter, { $pull: { tags: tag } });
+  res.sendStatus(204);
+});
+
+const updateDueDate = asyncHandler(async (req, res) => {
+  const uid = req.profile._id;
+  const { due, cardIds, pairIds } = req.body;
+  const filter = { uid, $or: [ { _id: { $in: cardIds } }, { pairId: { $in: pairIds } }] };
+  let dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + Number(due));
+  await Card.updateMany(filter, { $set: { due: dueDate } });
+  res.sendStatus(204); //SEND CARDS BACK??
+});
+
 
 
 export default { 
@@ -563,5 +603,8 @@ export default {
   getDashboardCards,
   bulkPatch,
   exportDeck,
-  importDeck
+  importDeck,
+  addTag,
+  removeTag,
+  updateDueDate
 }

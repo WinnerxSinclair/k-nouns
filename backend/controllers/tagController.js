@@ -12,7 +12,6 @@ const removeTag = asyncHandler(async (req, res) => {
   try{
     session.startTransaction();
     await User.updateOne({ _id: uid }, { $pull: { tags: tagName } }, { session });
-    await Deck.updateMany({ uid }, { $pull: { tags: tagName } }, { session });
     await Card.updateMany({ uid }, { $pull: { tags: tagName } }, { session });
     await session.commitTransaction();
     res.json({ message: 'deleted tag' });
@@ -33,18 +32,19 @@ const updateTagName = asyncHandler(async (req, res) => {
   try{
     session.startTransaction();
     await User.updateOne({ _id: uid, tags: tagName }, { $set: { 'tags.$': newName } }, { session });
-    await Deck.updateMany({ uid, tags: tagName }, { $set: { 'tags.$': newName } }, { session });
     await Card.updateMany({ uid, tags: tagName }, { $set: { 'tags.$': newName } }, { session });
     await session.commitTransaction();
     res.json({ message: 'tag name updated' });
   }catch{
-    session.abortTransaction();
+    await session.abortTransaction();
     console.error(err);
     next(err);
   }finally{
     await session.endSession();
   }
 });
+
+
 
 
 export default {

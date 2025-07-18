@@ -16,7 +16,7 @@ import userRoutes from './routes/userRoutes.js'
 import reviewRoutes from './routes/reviewRoutes.js'
 import tagRoutes from './routes/tagRoutes.js'
 import shareRoutes from './routes/shareRoutes.js'
-import { authenticateToken } from './middleware/authenticateToken.js'
+import { authenticateToken, requireVerifiedEmail } from './middleware/authenticateToken.js'
 
 dotenv.config();
 const app = express();
@@ -74,18 +74,18 @@ app.use(morgan(':method :url :status - :response-time ms :req[id]', {
 
 
 
-app.use('/api/tokenUsage', tokenUsageRoutes);
-app.use('/api/decks', authenticateToken, deckRoutes);
-app.use('/api/cards', authenticateToken, cardRoutes);
-app.use('/api/ai', authenticateToken, claudeRoutes)
-app.use('/api/user', authenticateToken, userRoutes);
-app.use('/api/review', authenticateToken, reviewRoutes);
-app.use('/api/tags', authenticateToken, tagRoutes);
-app.use('/api/share', authenticateToken, shareRoutes)
+app.use('/api/tokenUsage', requireVerifiedEmail, tokenUsageRoutes);
+app.use('/api/decks', requireVerifiedEmail, deckRoutes);
+app.use('/api/cards', requireVerifiedEmail, cardRoutes);
+app.use('/api/ai', requireVerifiedEmail, claudeRoutes)
+app.use('/api/user', requireVerifiedEmail, userRoutes);
+app.use('/api/review', requireVerifiedEmail, reviewRoutes);
+app.use('/api/tags', requireVerifiedEmail, tagRoutes);
+app.use('/api/share', requireVerifiedEmail, shareRoutes)
 app.get('/ping', (_, res) => res.send('pong'));
 
 app.use((err, _req, res, _next) => {
-  console.error(err);          // still logs stack
+  console.error(err);        
   res.status(500).json({ message: 'internal server error' });
 });
 

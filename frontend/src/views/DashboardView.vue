@@ -57,10 +57,6 @@
       </div>
     </div>
 
-    <div class="flex">      
-      <button class="m0a block create-btn" @click="modals.addDeck = true">+ Create New Deck</button>
-      <button class="m0a block create-btn" @click="modals.createTag = true">+ Create New Tag</button>
-    </div>
     <TheHeader header="Dashboard" />
 
     <section>
@@ -224,19 +220,6 @@
       </section>
     </div>
 
-    <ModalForm
-      label="Deck Name" 
-      :show="modals.addDeck" 
-      @submit="handleCreateDeck" 
-      @hide="modals.addDeck = false" 
-    />
-    <ModalForm
-      label="Tag" 
-      :show="modals.createTag" 
-      @submit="handleCreateTag" 
-      @hide="modals.createTag = false" 
-    />
-
     <ModalForm 
       @submit="handleUpdateDeckName" 
       @hide="modals.editDeckName = false" 
@@ -247,31 +230,34 @@
     />
     
     <ModalForm 
-      @hide="modals.dueDate = false"
+      @hide="resetModals(dueErrors)"
       :show="modals.dueDate"
       label="Set Due Date (0 = today)"
       btnText="Update"
       type="number"
-      @submit="handleBulk('setDue', $event)"
+      @submit="handleChangeDueDate"
       :lock="lock"
+      :errors="dueErrors.due"
     />
 
     <ModalForm 
-      @hide="modals.addTag = false"
+      @hide="resetModals(addRemoveTagErrors)"
       :show="modals.addTag"
       label="Add Tag to Card(s)"
       btnText="Add Tag"
-      @submit="handleBulk('addTag', $event)"
+      @submit="handleAddOrRemoveTag($event, 'add')"
       :lock="lock"
+      :errors="addRemoveTagErrors.tag"
     />
 
     <ModalForm 
-      @hide="modals.removeTag = false"
+      @hide="resetModals(addRemoveTagErrors)"
       :show="modals.removeTag"
       label="Remove Tag to Card(s)"
       btnText="Remove Tag"
-      @submit="handleBulk('removeTag', $event)"
+      @submit="handleAddOrRemoveTag($event, 'remove')"
       :lock="lock"
+      :errors="addRemoveTagErrors.tag"
     />
 
     <TransitionOverlay :show="modals.deleteDeck" @hide="modals.deleteDeck = false" :lock="lock">
@@ -338,15 +324,18 @@
       />
     </TransitionOverlay>
     
-    <EditFlashcardView :cardId="cardId" v-if="cardId" />
+   
+    <FullScreenModalWrapper v-if="cardId">
+      <EditFlashcardView :cardId="cardId" />
+    </FullScreenModalWrapper>
+
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref, reactive, useTemplateRef, watch, computed, onUnmounted } from 'vue'
-import { createDeck, createTag, deleteDeck, 
-         updateDeckName, updateTagName, deleteTag,
-         importShare, getDashboardCards, bulkOps, exportDeck, importDeck 
+import {  deleteDeck, updateDeckName, updateTagName, deleteTag,
+          getDashboardCards, bulkOps, exportDeck, importDeck, addTag, removeTag, updateDueDate
        } from '../api/api.js';
 import ModalForm from '../components/ModalForm.vue';
 import TheHeader from '../components/TheHeader.vue'
@@ -354,22 +343,23 @@ import TransitionOverlay from '../components/TransitionOverlay.vue';
 import EditFlashcardView from './EditFlashcardView.vue';
 import Confirmation from '../components/alerts/Confirmation.vue';
 import ContentLoadedTransition from '../components/widgets/ContentLoadedTransition.vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router';
+import FullScreenModalWrapper from '../components/FullScreenModalWrapper.vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useDeckStore } from '../stores/deckStore.js';
 import { useToastStore } from '../stores/toastStore.js';
+import { validate } from '../helpers/validate.js';
+import { addRemoveTagSchema, updateDueDateSchema } from '@zod/card.js';
 const route = useRoute();
 const router = useRouter();
 const deckStore = useDeckStore();
 const toastStore = useToastStore();
 const modals = ref({
-  addDeck: false,
-  createTag: false,
   deleteDeck: false,
   editDeckName: false,
   deleteTag: false,
   editTagName: false,
-  // importDeckFromCode: false,
-  importDeck: false, // only JSON for now
+
+  importDeck: false, 
   exportDeck: false,
 
   dueDate: false,
@@ -401,6 +391,7 @@ let querySets = reactive({
   tags: new Set()
 });
 
+
 const selectedDecksIdNamePairs = computed(() => {
   return Array.from(querySets.decks).map((id) => ({
     _id: id,
@@ -425,12 +416,77 @@ watch(selectedCards, () => {
                      selectedCards.value.length < cards.value.length;
 });
 
-function resetModals(){
+function resetModals(errRef){
   for(let key of Object.keys(modals.value)){
-    console.log(key);
     modals.value[key] = false;
   }
+  if(errRef !== undefined){
+    Object.keys(errRef).forEach((key) => errRef[key] = []);
+  }
 }
+
+function extractPairIds(){
+  let selectCardSet = new Set(selectedCards.value);
+  let pairIds = cards.value.filter((c) => selectCardSet.has(c._id))
+                           .map((card) => card?.pairId)
+                           .filter((pId) => pId !== undefined);
+  return pairIds;
+}
+function cardAndPairIds(){
+  return { cardIds: [...selectedCards.value], pairIds: extractPairIds() };
+}
+//addtag
+const addRemoveTagErrors = ref({
+  tag: []
+});
+async function handleAddOrRemoveTag(tag, mode){
+  if(lock.value) return;
+  lock.value = true;
+  try{
+    let payload = { tag, ...cardAndPairIds() };
+   
+    if(!validate(payload, addRemoveTagErrors, addRemoveTagSchema)) return;
+    console.log(payload);
+    if(mode === 'add'){
+      await addTag(payload);
+    }else if(mode === 'remove'){
+      await removeTag(payload);
+    }else return;
+    
+    resetModals();
+    somethingChangedLetsFetchCards();
+    await deckStore.fetchTags(); //REFETCH??
+    const toastMsg = mode === 'add' ? `tag ${tag} added to cards` : `tag ${tag} removed from cards`;
+    toastStore.createToast(toastMsg)
+  }catch(err){
+    console.error(err);
+  }finally{
+    lock.value = false;
+  }
+}
+
+//update due date
+const dueErrors = ref({
+  due: []
+});
+async function handleChangeDueDate(due){
+  if(lock.value) return;
+  lock.value = true;
+  try{
+    let payload = { due, ...cardAndPairIds() };
+    
+    if(!validate(payload, dueErrors, updateDueDateSchema)) return;
+    await updateDueDate(payload);
+    resetModals();
+    somethingChangedLetsFetchCards();
+    toastStore.createToast('due date updated');
+  }catch(err){
+    console.error(err);
+  }finally{
+    lock.value = false;
+  }
+}
+
 async function handleBulk(option, pl){ //setDue, addTag, removeTag, delete, reset
                     
   try{
@@ -438,8 +494,8 @@ async function handleBulk(option, pl){ //setDue, addTag, removeTag, delete, rese
     if(!selectedCards.value.length) return;
     let selectCardSet = new Set(selectedCards.value);
     let pairIds = cards.value.filter((c) => selectCardSet.has(c._id))
-                            .map((card) => card?.pairId)
-                            .filter((pId) => pId !== undefined);
+                             .map((card) => card?.pairId)
+                             .filter((pId) => pId !== undefined);
     
     let payload = { option, cardIds: [...selectedCards.value], pairIds };
     if(option === 'setDue') payload.due = pl;
@@ -544,21 +600,7 @@ function handleMasterSwitch(){
     selectedCards.value = [];
   }
 }
-//name is obj
-async function handleCreateDeck(name){
-  if(submitting.value) return;
-  submitting.value = true;
-  try{
-    await createDeck({ name });
-    await deckStore.fetchDecks();
-    modals.value.addDeck = false;
-    toastStore.createToast(`Deck ${name} Created`);
-  }catch(err){
-    console.log(err);
-  }finally{
-    submitting.value = false;
-  }
-}
+
 
 function setTagMode(mode){
   tagMode.value = mode;
@@ -687,34 +729,6 @@ async function handleTagDelete(){
   }
 }
 
-async function handleCreateTag(name){
-  if(lock.value) return;
-  lock.value = true;
-  try{
-    await createTag({ tagName: name });
-    await deckStore.fetchTags(); //REFETCJ???
-    modals.value.createTag = false;
-    toastStore.createToast(`Tag ${name} Created`);
-  }catch(err){
-    console.log(err)
-  }finally{
-    lock.value = false;
-  }
-}
-
-
-// async function handleImportDeckFromCode(_id){
-//   if(submitting.value) return;
-//   submitting.value = true;
-//   try{
-//     const x = await importShare({ _id });
-//     console.log(x);
-//   }catch(err){
-//     console.error(err);
-//   }finally{
-//     submitting.value = false;
-//   }
-// }
 
 //popup stuff
 const selectedDeckEdit = ref(null);

@@ -23,16 +23,20 @@
     "firebase-admin": "^13.3.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "module-alias": "^2.2.3",
     "mongodb": "^6.15.0",
     "mongoose": "^8.13.1",
     "morgan": "^1.10.0",
     "multer": "^2.0.1",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
-    "zod": "^3.25.74"
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "supertest": "^7.1.1",
     "vitest": "^3.2.4"
+  },
+  "_moduleAliases": {
+    "@zod": "../shared/zodSchemas"
   }
 }

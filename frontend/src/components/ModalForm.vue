@@ -6,6 +6,7 @@
           <label>{{ label }}</label>
           <input class="fs-500" v-focus :type="type" v-model="name" :disabled="lock">
         </div>
+        <ErrorRender :errors="errors" />
         <button class="mt-3" :disabled="lockButton">{{ btnText }}</button>
       </form>
     </TheOverlay>
@@ -15,6 +16,7 @@
 <script setup>
 import ModalTransition from './widgets/ModalTransition.vue';
 import TheOverlay from './widgets/TheOverlay.vue';
+import ErrorRender from './widgets/ErrorRender.vue';
 import { ref, watch, computed } from 'vue'
 import { vFocus } from '../directives/vFocus.js';
 
@@ -26,12 +28,14 @@ const props = defineProps({
   btnText: { type: String, default: 'Create' },
   type: { type: String, default: 'text' },
   lock: { type: Boolean, default: false },
-  submitting: { type: Boolean, default: false }
+  submitting: { type: Boolean, default: false },
+  maxLen: { type: Number },
+  errors: { type: Array, default: [] }
 });
 
 const name = ref(null);
 const lockButton = computed(() => {
-  return (!name.value && name.value !== 0) || props.lock || props.submitting;
+  return props.lock || props.submitting;
 })
 
 watch(() => props.show, (v) => {

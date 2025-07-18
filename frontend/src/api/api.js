@@ -15,7 +15,7 @@ api.interceptors.request.use(async (config) => {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
-})
+});
 
 
 
@@ -134,7 +134,23 @@ export const bulkOps = async (payload) => {
   return response.data;
 }
 
-//updating usertags - related to cards
+export const addTag = async (payload = { tag, cardIds, pairIds }) => {
+
+  const response = await api.post('/api/cards/bulk/tags', payload);
+  return response.data;
+}
+
+export const removeTag = async (payload = { tag, cardIds, pairIds }) => {
+  const response = await api.patch('/api/cards/bulk/tags', payload);
+  return response.data;
+}
+
+export const updateDueDate = async (payload = { due, cardIds, pairIds }) => {
+  const response = await api.patch('/api/cards/bulk/due', payload);
+  return response.data;
+}
+
+//updating usertags
 export const createTag = async (input) => {
   console.log(input)
   const response = await api.patch(`/api/user/tags`, input);

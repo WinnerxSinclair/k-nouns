@@ -1,12 +1,14 @@
 <template>
   <div class="flex col mt-3">
-    <label>{{ label }}</label>
+    <label :for="label">{{ label }}</label>
     <textarea 
       v-autosize
-      name="" id="" 
+      
       :placeholder="placeholder" 
       v-model="model"
       :required="required"
+      :maxLength="maxLength"
+      :id="label"
     >
     </textarea>
   </div>
@@ -16,7 +18,8 @@
 const props = defineProps({
   label: String,
   placeholder: String,
-  required: { type: Boolean, default: false }
+  required: { type: Boolean, default: false },
+  maxLength: { type: Number, default: 1500 }
 });
 
 const model = defineModel();

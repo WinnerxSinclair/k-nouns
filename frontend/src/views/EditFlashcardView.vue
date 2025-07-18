@@ -1,5 +1,5 @@
 <template>
-  <div class="abs flex edit-card-wrap col ac grow" v-if="!loading && form">
+  <div class="flex edit-card-wrap col ac" v-if="!loading && form">
     <button class="back-btn">Back (insert arrow)</button>
     <!-- <div class="flex jfe">
       
@@ -61,37 +61,38 @@
         <input id="mirror" type="checkbox" v-model="form.mirror">
       </div>
 
-      <div class="flex gap ac mt-3">
-        <label>Tags</label>
-        <button class="img-btn" @click="showTagForm = true" type="button">
-          <img class="block" src="../assets/add.png" alt="">
-        </button>
-      </div>
-
-      <ul class="flex gap wrap tag-list">
-        <li class="tag-btn-wrapper" v-for="tag in deckStore.tags" :key="tag">
-          <button type="button" 
-            @click="prepTags(tag)"
-            :class="{'selected-tag': tags.has(tag)}"
-          > {{ tag }}
+      <section class="flex col gap">
+        <div class="flex gap ac mt-3">
+          <label>Tags</label>
+          <input type="text" v-model.trim="tagInput" maxlength="20" :disabled="submitting">
+          <button class="arrow-btn" type="button" @click="handleAddTagClick(tagInput)" :disabled="submitting">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ffffffde"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>
           </button>
-        </li>
-      </ul>
+        </div>
+
+  
+        <ul class="flex gap wrap tag-container">
+          <li class="tag-btn-wrapper" v-for="tag in filteredTags" :key="tag">
+            <button type="button" 
+              @click="prepTags(tag)"
+              :class="{'selected-tag': tags.has(tag)}"
+            > {{ tag }}
+            </button>
+          </li>
+        </ul>
+      </section>
 
       <br>
       <FlatButton text="Save Entry" :disabled="!form.back.length || !form.front.length" />
       
     </form>
-    
-
-    <ModalForm label="Tag" :show="showTagForm" @hide="showTagForm = false" @submit="addTagLocal" />
    
   </div>
   <div class="tac fs-500" v-else-if="!loading && !form">Problem getting card or card doesn't exist.</div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { translate, explain, deleteCard, getCard, createTag, updateCard } from '../api/api.js'
 import { useDeckStore } from '../stores/deckStore.js'
 import { useUserStore } from '../stores/userStore.js'
@@ -100,7 +101,6 @@ import TheHeader from '../components/TheHeader.vue'
 import TheTextarea from '../components/TheTextarea.vue'
 import TheOverlay from '../components/widgets/TheOverlay.vue'
 import TheSpinner from '../components/widgets/TheSpinner.vue'
-import ModalForm from '../components/ModalForm.vue'
 import FlatButton from '../components/buttons/FlatButton.vue'
 import TokenCount from '../components/widgets/TokenCount.vue'
 import { useRouter } from 'vue-router'
@@ -119,21 +119,27 @@ const translateLoading = ref(false);
 const explainLoading = ref(false);
 const savingForm = ref(false);
 const errMsg = ref(null);
-const showTagForm = ref(false);
 const loading = ref(true);
+const tagInput = ref('');
 
 const tags = ref(new Set());
 
-async function handleCardDelete(){ //NOT VALID ANYMORE
-  try{
-    await deleteCard(props.cardId);
-    router.replace(`/deck/${form.value.deckId}`)
-  }catch(err){
-    console.error(err);
-  }finally{
+const normalizedTags = computed(() => 
+  deckStore.tags.map((t) => ({ raw: t, low: t.toLowerCase() }))
+);
+const filteredTags = computed(() => {
+  const q = tagInput.value.trim().toLowerCase()
 
-  }
-}
+  const base = q
+    ? normalizedTags.value          
+        .filter(({ low }) => low.includes(q))
+        .map(({ raw }) => raw)
+    : deckStore.tags.slice()       
+
+  return base.toSorted(
+    (a, b) => Number(tags.value.has(b)) - Number(tags.value.has(a))
+  )
+});
 const translateClicked = async () => {
   const { front, context } = form.value;
   const body = {
@@ -186,13 +192,17 @@ const explainClicked = async () => {
   }
 }
 
-const addTagLocal = async (tag) => {
+const handleAddTagClick = async (tag) => {
+  if(!tag.trim()) return;
   if(submitting.value) return;
   submitting.value = true;
+  
   try{
     await createTag({ tagName: tag });
-    await deckStore.fetchTags();
-    showTagForm.value = false;
+    await deckStore.fetchTags(); //REFETCH???
+    tags.value.add(tag);
+    tagInput.value = '';
+    toastStore.createToast(`Tag ${tag} created`);
   }catch(err){
     console.error(err);
   }finally{
@@ -254,12 +264,12 @@ onMounted(async () => {
 
 
 <style scoped>
-.edit-card-wrap{
+/* .edit-card-wrap{
   z-index: 2;
   width: 100%;
   background: rgb(255, 253, 247);
   min-height: 100vh;
-}
+} */
 .back-btn{
   position:absolute;
   top: 10px;
@@ -280,9 +290,9 @@ ul{
 form{
   width: clamp(350px, 50%, 550px);
 }
-button:not(.img-btn){
-  width: fit-content;
-  margin-top: .5rem;
- 
+
+.tag-container{
+  max-height: 200px;
+  overflow: scroll;
 }
 </style>

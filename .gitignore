@@ -1,9 +1,11 @@
-# === Shared ===
+# === every ===
 .env
 *.log
 logs/
 .DS_Store
 
+# === shared ===
+/shared/node_modules/
 # === Frontend ===
 /frontend/node_modules/
 /frontend/dist/

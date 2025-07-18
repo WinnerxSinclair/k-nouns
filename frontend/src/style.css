@@ -89,7 +89,9 @@ input{
   border-radius: .2rem;
   /* background:rgba(245, 184, 92, 0.096); */
 }
-
+.err{
+  color:rgb(153, 0, 0);
+}
 .bold{
   font-weight: bold;
 }
@@ -241,4 +243,18 @@ button:disabled {
 .form-group{
   display: grid;
   gap: .5cap;
+}
+
+
+
+
+/* EDIT CARD CREATE CARD */
+.arrow-btn{
+  line-height: 0;
+  background: var(--btn-bg-primary);
+  border-radius: .2rem;
+}
+.tag-container{
+  max-height: 200px;
+  overflow: scroll;
 }

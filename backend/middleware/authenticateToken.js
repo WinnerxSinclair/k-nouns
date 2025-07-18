@@ -10,13 +10,14 @@ export async function authenticateToken(req, res, next) {
 
   const idToken = match[1]
   try {
-    // This verifies signature, expiry, and issuer all at once
-    const decoded = await admin.auth().verifyIdToken(idToken)
-    req.user = decoded     // contains uid, email, etc.
+    
+    const decoded = await admin.auth().verifyIdToken(idToken, true);
+
+    req.user = decoded     
    
     const profile = await User.findOneAndUpdate(
       { uid: decoded.uid },
-      {},            // no-op update
+      {},           
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
    
@@ -28,5 +29,10 @@ export async function authenticateToken(req, res, next) {
     res.status(401).json({ message: 'Invalid or expired token' })
   }
 }
+
+export const requireVerifiedEmail = [authenticateToken, (req, res, next) => {
+  if(!req.user.email_verified) return res.status(403).json({ message: 'verify email required' });
+  next();
+}];
 
 

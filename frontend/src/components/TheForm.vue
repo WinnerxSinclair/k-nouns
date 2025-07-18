@@ -88,6 +88,7 @@ function submitForm(){
       emit('submit', { ...formValues.value });
     }
 }
+
 function validate(name, i){
   if(!props.fields[i].validation) return;
   let val = formValues.value[name];
@@ -107,8 +108,8 @@ function validate(name, i){
 form{
   max-width: 450px;
   margin: 0 auto;
-  border: 1px solid black;
-  background: #ffec8d7e;
+  
+  
  
   padding: 2rem 5rem;
   border-radius: 1rem;

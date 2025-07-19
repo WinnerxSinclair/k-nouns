@@ -339,9 +339,9 @@ const gradeCard = asyncHandler(async (req, res) => { //SKIPPING ZOD FOR NOW
 });
 
 const getCardBatch = asyncHandler(async (req, res) => {
-  const { want = 10, decks = [], tags = [], conditional = '$or' } = req.body;
+  const { decks = [], tags = [], conditional = '$or' } = req.body;
   const uid = req.profile._id;
-
+  const want = 10;
   const cardBatch = await Card.find({
     uid: uid,
     due: { $lte: Date.now() + 5*60*1000 },
@@ -583,6 +583,24 @@ const updateDueDate = asyncHandler(async (req, res) => {
   res.sendStatus(204); //SEND CARDS BACK??
 });
 
+const resetSrs = asyncHandler(async (req, res) => {
+  const uid = req.profile._id;
+  const { cardIds, pairIds } = req.body;
+  const filter = { uid, $or: [ { _id: { $in: cardIds } }, { pairId: { $in: pairIds } }] };
+  await Card.updateMany(filter, {
+    $set: { interval: 0, ease: 2.5, reps: 0, lapses: 0, due: new Date() }
+  });
+  res.sendStatus(204);
+});
+
+const deleteCards = asyncHandler(async (req, res) => {
+  const uid = req.profile._id;
+  const { cardIds, pairIds } = req.body;
+  const filter = { uid, $or: [ { _id: { $in: cardIds } }, { pairId: { $in: pairIds } }] };
+  await Card.deleteMany(filter);
+  res.sendStatus(204);
+});
+
 
 
 export default { 
@@ -606,5 +624,7 @@ export default {
   importDeck,
   addTag,
   removeTag,
-  updateDueDate
+  updateDueDate,
+  resetSrs,
+  deleteCards
 }

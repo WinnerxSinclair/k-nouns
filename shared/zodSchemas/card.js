@@ -16,18 +16,29 @@ import {
   MAX_DUE_DATE,
   MIN_DUE_DATE,
 
-  MAX_CARDS
+  MAX_CARDS,
+
+  hex24
 } from '../constants/zod/validation.js';
 
-const hex24 = /^[a-f\d]{24}$/i;
 
-export const createCardSchema = z.strictObject({
+const baseCardSchema = z.strictObject({
   context:     z.string().trim().max(CONTEXT_MAX_LEN).optional(),
   front:       z.string().trim().max(FRONT_MAX_LEN),
   back:        z.string().trim().max(BACK_MAX_LEN),
   explanation: z.string().trim().max(EXPLANATION_MAX_LEN).optional(),
   mirror:      z.boolean().default(false),
   tags:        z.array(z.string().trim().min(TAG_MIN_LEN).max(TAG_MAX_LEN)).max(TAG_ARR_MAX_LEN).default([])
+});
+export const createCardSchema = z.strictObject({
+  ...baseCardSchema.shape
+});
+
+export const updateCardSchema = z.strictObject({
+  ...baseCardSchema.shape,
+  pairId:      z.uuid().optional(),
+  deckId:      z.string().regex(hex24),
+  _id:         z.string().regex(hex24).optional()
 });
 
 export const dashboardCardsSchema = z.strictObject({
@@ -37,31 +48,12 @@ export const dashboardCardsSchema = z.strictObject({
 });
 
 export const reviewCardsSchema = z.strictObject({
-  want:        z.number().default(10),
   decks:       z.array(z.string().regex(hex24)).max(MAX_DECKS).default([]),
   tags:        z.array(z.string().trim()).max(MAX_TAGS).default([]),
   conditional: z.enum(['$or', '$and']).default('$or')
 });
 
-export const getCardSchema = z.strictObject({
-  cardId: z.string().regex(hex24)
-});
 
-export const updateCardSchema = z.strictObject({
-  context:     z.string().trim().max(CONTEXT_MAX_LEN).optional(),
-  front:       z.string().trim().max(FRONT_MAX_LEN),
-  back:        z.string().trim().max(BACK_MAX_LEN),
-  explanation: z.string().trim().max(EXPLANATION_MAX_LEN).optional(),
-  mirror:      z.boolean().default(false),
-  tags:        z.array(z.string().trim().min(TAG_MIN_LEN).max(TAG_MAX_LEN)).max(TAG_ARR_MAX_LEN).default([]),
-  pairId:      z.uuid().optional(),
-  deckId:      z.string().regex(hex24),
-  _id:         z.string().regex(hex24).optional()
-});
-
-export const updateCardSchemaParams = z.strictObject({
-  cardId: z.string().regex(hex24)
-});
 
 export const bulkPatchCardsDefaultSchema = z.strictObject({
   cardIds: z.array(z.string().regex(hex24)).min(1).max(MAX_CARDS),

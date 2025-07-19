@@ -221,12 +221,15 @@
     </div>
 
     <ModalForm 
-      @submit="handleUpdateDeckName" 
-      @hide="modals.editDeckName = false" 
+      @submit="handleDeckRename" 
+      @hide="resetModals(deckRenameErrors)" 
       :show="modals.editDeckName" 
       :prefill="deckName"
       label="Deck Name"
-      btnText="Update Name" 
+      btnText="Update Name"
+      :maxLen="DECK_MAX_LEN"
+      :lock="lock"
+      :errors="deckRenameErrors.name" 
     />
     
     <ModalForm 
@@ -235,6 +238,8 @@
       label="Set Due Date (0 = today)"
       btnText="Update"
       type="number"
+      :max="MAX_DUE_DATE"
+      :min="MIN_DUE_DATE"
       @submit="handleChangeDueDate"
       :lock="lock"
       :errors="dueErrors.due"
@@ -245,6 +250,7 @@
       :show="modals.addTag"
       label="Add Tag to Card(s)"
       btnText="Add Tag"
+      :maxLen="TAG_MAX_LEN"
       @submit="handleAddOrRemoveTag($event, 'add')"
       :lock="lock"
       :errors="addRemoveTagErrors.tag"
@@ -255,6 +261,7 @@
       :show="modals.removeTag"
       label="Remove Tag to Card(s)"
       btnText="Remove Tag"
+      :maxLen="TAG_MAX_LEN"
       @submit="handleAddOrRemoveTag($event, 'remove')"
       :lock="lock"
       :errors="addRemoveTagErrors.tag"
@@ -284,19 +291,21 @@
     </TransitionOverlay>
 
     <ModalForm 
-      @submit="handleUpdateTagName" 
-      @hide="modals.editTagName = false" 
+      @submit="handleTagRename" 
+      @hide="resetModals(tagRenameErrors)" 
       :show="modals.editTagName" 
       :prefill="tag"
       label="Tag Name"
       btnText="Update Name"
-      :lock="lock" 
+      :maxLen="TAG_MAX_LEN"
+      :lock="lock"
+      :errors="tagRenameErrors.tag" 
     /> 
 
     <TransitionOverlay :show="modals.reset" @hide="modals.reset = false" :lock="lock">
       <Confirmation 
         @cancel="modals.reset = false"
-        @confirm="handleBulk('reset')" 
+        @confirm="handleResetSrs" 
         heading="Confirm Reset" 
         :message="`All card(s) progress will be reset.`"
         :lock="lock" 
@@ -306,7 +315,7 @@
     <TransitionOverlay :show="modals.delete" @hide="modals.delete = false" :lock="lock">
       <Confirmation 
         @cancel="modals.delete = false"
-        @confirm="handleBulk('delete')" 
+        @confirm="handleBulkDelete" 
         heading="Confirm Delete" 
         :message="`Selected Card(s) will be deleted permanently.`"
         :lock="lock"
@@ -333,9 +342,12 @@
 </template>
 
 <script setup>
+//NOTE - im refetching cards after operations for ease, but its probably better to do it a different way
+//TODO - MAXLEN ON INPUT
 import { onMounted, ref, reactive, useTemplateRef, watch, computed, onUnmounted } from 'vue'
 import {  deleteDeck, updateDeckName, updateTagName, deleteTag,
-          getDashboardCards, bulkOps, exportDeck, importDeck, addTag, removeTag, updateDueDate
+          getDashboardCards, exportDeck, importDeck, addTag, removeTag, updateDueDate,
+          resetSrs, deleteCards
        } from '../api/api.js';
 import ModalForm from '../components/ModalForm.vue';
 import TheHeader from '../components/TheHeader.vue'
@@ -347,8 +359,11 @@ import FullScreenModalWrapper from '../components/FullScreenModalWrapper.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDeckStore } from '../stores/deckStore.js';
 import { useToastStore } from '../stores/toastStore.js';
-import { validate } from '../helpers/validate.js';
-import { addRemoveTagSchema, updateDueDateSchema } from '@zod/card.js';
+import { validate, validateNoRender } from '../helpers/validate.js';
+import { addRemoveTagSchema, updateDueDateSchema, bulkPatchCardsDefaultSchema } from '@zod/card.js';
+import { TAG_MAX_LEN, DECK_MAX_LEN, MAX_DUE_DATE, MIN_DUE_DATE } from '../../../shared/constants/zod/validation.js';
+import { createDeckSchema } from '@zod/deck.js';
+import { tagSchema } from '../../../shared/zodSchemas/tag.js';
 const route = useRoute();
 const router = useRouter();
 const deckStore = useDeckStore();
@@ -373,7 +388,6 @@ const deckName = ref('');
 const deckId = ref(null);
 const tag = ref('');
 const isLoading = ref(true);
-const submitting = ref(false);
 const exportMode = ref('backup');
 const cards = ref([]);
 const cardId = ref(null);
@@ -407,14 +421,25 @@ function resetQuerySets(){
   querySets.tags.clear();
 }
 const cardIds = computed(() => cards.value.map((c) => c?._id));
+
+//table checkboxes master logic
 watch(selectedCards, () => {
   const el = master.value;
-  if (!el) return;                 // avoid “cannot set prop of null”
+  if (!el) return;                
   if(!cards.value.length) return;
   el.checked       = selectedCards.value.length === cards.value.length;
   el.indeterminate = selectedCards.value.length &&
                      selectedCards.value.length < cards.value.length;
 });
+
+function handleMasterSwitch(){
+  let checked = master.value.checked;
+  if(checked){
+    selectedCards.value = cardIds.value;
+  }else{
+    selectedCards.value = [];
+  }
+}
 
 function resetModals(errRef){
   for(let key of Object.keys(modals.value)){
@@ -435,7 +460,8 @@ function extractPairIds(){
 function cardAndPairIds(){
   return { cardIds: [...selectedCards.value], pairIds: extractPairIds() };
 }
-//addtag
+//add or remove tag
+//REFACTOR ALL THESE TO DYNAMIC FUNCTION???
 const addRemoveTagErrors = ref({
   tag: []
 });
@@ -486,48 +512,44 @@ async function handleChangeDueDate(due){
     lock.value = false;
   }
 }
-
-async function handleBulk(option, pl){ //setDue, addTag, removeTag, delete, reset
-                    
+//reset card srs
+async function handleResetSrs(){
+  if(lock.value) return;
+  lock.value = true;
   try{
-    lock.value = true;
-    if(!selectedCards.value.length) return;
-    let selectCardSet = new Set(selectedCards.value);
-    let pairIds = cards.value.filter((c) => selectCardSet.has(c._id))
-                             .map((card) => card?.pairId)
-                             .filter((pId) => pId !== undefined);
-    
-    let payload = { option, cardIds: [...selectedCards.value], pairIds };
-    if(option === 'setDue') payload.due = pl;
-    if(option == 'addTag' || option === 'removeTag') payload.tag = pl;
-    // let x = new Promise(resolve => {
-    //   setTimeout(() => resolve('xd'), 5000);
-    // });
-    // await x;
-    await bulkOps(payload);
+    let payload = { ...cardAndPairIds() };
+    if(!validateNoRender(payload, bulkPatchCardsDefaultSchema)) return;
+    await resetSrs(payload);
     resetModals();
     somethingChangedLetsFetchCards();
-    if(option === 'addTag'){
-      await deckStore.fetchTags(); //REFETCH???
-      toastStore.createToast(`tag ${pl} added to cards success`);
-    }else if(option === 'removeTag'){
-      toastStore.createToast(`tag ${pl} removed from cards success`);
-    }else if(option === 'setDue'){
-      toastStore.createToast(`due date update success`);
-    }else if(option === 'delete'){
-      toastStore.createToast(`cards deleted success`);
-    }
-    else if(option === 'reset'){
-      toastStore.createToast(`cards reset success`);
-    }
-    
-    console.log('success');
+    toastStore.createToast('cards srs reset');
   }catch(err){
     console.error(err);
   }finally{
     lock.value = false;
   }
-} //REFACTOR???
+}
+
+async function handleBulkDelete(){
+  if(lock.value) return;
+  lock.value = true;
+  try{
+    let payload = { ...cardAndPairIds() };
+    console.log(payload);
+    if(!validateNoRender(payload, bulkPatchCardsDefaultSchema)) return;
+  
+    await deleteCards(payload);
+   
+    resetModals();
+    somethingChangedLetsFetchCards();
+    toastStore.createToast('cards deleted');
+  }catch(err){
+    console.error(err);
+  }finally{
+    lock.value = false;
+  }
+}
+
 
 
 async function handleExportJSONClick(){
@@ -546,6 +568,7 @@ async function handleExportJSONClick(){
   }
 }
 
+//to close the edit card modal
 watch(() => route.params.cardId, (id) => {
   if(id){
     cardId.value = id;
@@ -591,15 +614,7 @@ async function somethingChangedLetsFetchCards(){
     console.error(err);
   }
 }
-function handleMasterSwitch(){
-  let checked = master.value.checked;
-  console.log(checked);
-  if(checked){
-    selectedCards.value = cardIds.value;
-  }else{
-    selectedCards.value = [];
-  }
-}
+
 
 
 function setTagMode(mode){
@@ -665,31 +680,34 @@ async function handleDeckDelete(){
   lock.value = true;
   try{
     await deleteDeck(deckId.value);
-    await deckStore.fetchDecks();
+    await deckStore.fetchDecks(); //REFETCH??
     somethingChangedLetsFetchCards();
-    console.log(deckId.value);
     querySets.decks.delete(deckId.value);
     toastStore.createToast(`Deck ${deckName.value} Deleted`);
     deckName.value = '';
     deckId.value = null;
-    modals.value.deleteDeck = false;
-    
+    resetModals();
   }catch(err){
     console.error(err);
   }finally{
     lock.value = false;
   }
 }
-async function handleUpdateDeckName(name){
+
+const deckRenameErrors = ref({
+  name: []
+});
+async function handleDeckRename(name){
   if(lock.value) return;
   lock.value = true;
   try{
+    if(!validate({ name }, deckRenameErrors, createDeckSchema)) return;
     await updateDeckName(deckId.value, { name });
     toastStore.createToast(`Name Change Success`);
     deckName.value = '';
     deckId.value = null;
     await deckStore.fetchDecks(); //DO I NEED TO REFETCH????
-    modals.value.editDeckName = false;
+    resetModals();
   }catch(err){
     console.error(err);lock
   }finally{
@@ -697,15 +715,19 @@ async function handleUpdateDeckName(name){
   }
 }
 
-async function handleUpdateTagName(newName){
+const tagRenameErrors = ref({
+  tag: []
+});
+async function handleTagRename(newName){
   if(lock.value) return;
   lock.value = true;
   try{
+    if(!validate({ tag: newName }, tagRenameErrors, tagSchema)) return;
     await updateTagName(tag.value, { newName });
     toastStore.createToast(`Name Change Success`);
     tag.value = '';
     await deckStore.fetchTags(); //MIGHT NOT NEED TO REFETCH
-    modals.value.editTagName = false;
+    resetModals();
   }catch(err){
     console.error(err);
   }finally{

@@ -18,3 +18,8 @@ export const MAX_TAGS = 200;
 export const MAX_DUE_DATE = 1000;
 export const MIN_DUE_DATE = 0;
 export const MAX_CARDS = 2000;
+
+//editing decks
+export const DECK_MAX_LEN = 60;
+
+export const hex24 = /^[a-f\d]{24}$/i;

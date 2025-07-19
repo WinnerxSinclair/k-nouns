@@ -10,3 +10,9 @@ export const validate = (raw, errForm, schema) => {
   }
   return zodRes.success;
 }
+
+
+export const validateNoRender = (raw, schema) => {
+  const zodRes = schema.safeParse(raw);
+  return zodRes.success;
+}

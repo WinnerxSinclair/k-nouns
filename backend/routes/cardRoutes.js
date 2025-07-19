@@ -1,28 +1,35 @@
 import express from 'express'
 import cardController from '../controllers/cardController.js';
+
 import { 
-  dashboardCardsSchema, 
-  getCardSchema, 
-  updateCardSchema, 
-  updateCardSchemaParams,
-  bulkPatchCardsSchema 
-} 
-from '../validators/card.js';
+  addRemoveTagSchema, 
+  updateDueDateSchema, 
+  bulkPatchCardsDefaultSchema, 
+  updateCardSchema,
+  dashboardCardsSchema
+
+} from '../../shared/zodSchemas/card.js'
+
+import { validateMongoId } from '../../shared/zodSchemas/general.js';
 import { validateBody, validateParams } from '../middleware/validate.js';
 const router = express.Router();
 
-router.delete('/:cardId', cardController.deleteCard);
+router.post('/bulk/tags', validateBody(addRemoveTagSchema), cardController.addTag);
+router.patch('/bulk/tags', validateBody(addRemoveTagSchema), cardController.removeTag);
 
-router.get('/:cardId', validateParams(getCardSchema), cardController.getCard);
+router.patch('/bulk/due', validateBody(updateDueDateSchema), cardController.updateDueDate);
 
-router.post('/:cardId', validateParams(updateCardSchemaParams), validateBody(updateCardSchema), cardController.updateCard);
+router.patch('/bulk/srs', validateBody(bulkPatchCardsDefaultSchema), cardController.resetSrs);
 
-router.post('/', validateBody(dashboardCardsSchema), cardController.getDashboardCards);
+router.post('/bulk', validateBody(bulkPatchCardsDefaultSchema), cardController.deleteCards);
 
-router.patch('/bulk', validateBody(bulkPatchCardsSchema), cardController.bulkPatch);
+router.delete('/:cardId', cardController.deleteCard); //NEED??
 
-router.post('/bulk/tags', cardController.addTag);
-router.patch('/bulk/tags', cardController.removeTag);
+router.get('/:cardId', validateParams(validateMongoId('cardId')), cardController.getCard);
 
-router.patch('/bulk/due', cardController.updateDueDate);
+router.post('/:cardId', validateParams(validateMongoId('cardId')), validateBody(updateCardSchema), cardController.updateCard);
+
+router.post('/', validateBody(dashboardCardsSchema), cardController.getDashboardCards); 
+
+
 export default router

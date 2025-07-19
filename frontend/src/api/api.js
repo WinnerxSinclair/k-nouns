@@ -150,6 +150,16 @@ export const updateDueDate = async (payload = { due, cardIds, pairIds }) => {
   return response.data;
 }
 
+export const resetSrs = async (payload = { cardIds, pairIds }) => {
+  const response = await api.patch('/api/cards/bulk/srs', payload);
+  return response.data;
+}
+
+export const deleteCards = async (payload = { cardIds, pairIds }) => {
+  const response = await api.post('/api/cards/bulk', payload);
+  return response.data;
+}
+
 //updating usertags
 export const createTag = async (input) => {
   console.log(input)

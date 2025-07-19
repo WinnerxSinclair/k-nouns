@@ -18,6 +18,7 @@ import tagRoutes from './routes/tagRoutes.js'
 import shareRoutes from './routes/shareRoutes.js'
 import { authenticateToken, requireVerifiedEmail } from './middleware/authenticateToken.js'
 
+
 dotenv.config();
 const app = express();
 app.use(express.json());

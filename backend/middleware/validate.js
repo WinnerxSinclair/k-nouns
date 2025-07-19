@@ -7,7 +7,7 @@ export const validateBody = (schema) => (req, res, next) => {
       errors: result.error.flatten().fieldErrors,
     });
   }
-  req.body = result.data; // already trimmed & cleaned
+  req.body = result.data; 
   next();
 };
 

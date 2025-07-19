@@ -4,7 +4,7 @@
       <form @submit.prevent="emitSubmit">
         <div class="flex col gap">
           <label>{{ label }}</label>
-          <input class="fs-500" v-focus :type="type" v-model="name" :disabled="lock">
+          <input class="fs-500" v-focus required :type="type" v-model="name" :disabled="lock" :maxlength="maxLen" :max="max" :min="min">
         </div>
         <ErrorRender :errors="errors" />
         <button class="mt-3" :disabled="lockButton">{{ btnText }}</button>
@@ -30,6 +30,8 @@ const props = defineProps({
   lock: { type: Boolean, default: false },
   submitting: { type: Boolean, default: false },
   maxLen: { type: Number },
+  min: { type: Number },
+  max: { type: Number },
   errors: { type: Array, default: [] }
 });
 

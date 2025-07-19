@@ -13,7 +13,7 @@
     :show="modals.addDeck" 
     @submit="handleCreateDeck" 
     @hide="modals.addDeck = false"
-    :submitting="submitting" 
+    :maxLen="DECK_MAX_LEN"
   />
 </template>
 
@@ -23,6 +23,7 @@ import { useDeckStore } from '../stores/deckStore.js';
 import { useToastStore } from '../stores/toastStore.js';
 import ModalForm from '../components/ModalForm.vue';
 import { createDeck } from '../api/api.js'
+import { DECK_MAX_LEN } from '../../../shared/constants/zod/validation.js';
 const deckStore = useDeckStore();
 const toastStore = useToastStore();
 const modals = ref({

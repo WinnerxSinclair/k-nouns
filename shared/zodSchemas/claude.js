@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { FRONT_MAX_LEN, CONTEXT_MAX_LEN, BACK_MAX_LEN } from '../constants/zod/validation';
+import { FRONT_MAX_LEN, CONTEXT_MAX_LEN, BACK_MAX_LEN } from '../constants/zod/validation.js';
 export const translateSchema = z.strictObject({
   context: z.string().trim().min(1).max(CONTEXT_MAX_LEN).optional(),
   front:   z.string().trim().min(1).max(FRONT_MAX_LEN)

@@ -2,8 +2,7 @@ import express from 'express'
 import cardController from '../controllers/cardController.js'
 import multer from 'multer'
 import { validateBody, validateParams } from '../middleware/validate.js';
-import { exportDeckSchema } from '../validators/deck.js';
-import { createDeckSchema } from '../../shared/zodSchemas/deck.js';
+import { createDeckSchema, exportDeckSchema } from '../../shared/zodSchemas/deck.js';
 import { validateMongoId } from '../../shared/zodSchemas/general.js'
 import { createCardSchema } from '../../shared/zodSchemas/card.js';
 const upload = multer();

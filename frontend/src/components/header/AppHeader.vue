@@ -53,16 +53,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/authStore.js';
-
-const router = useRouter();
+import { useRoute } from 'vue-router';
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 
 const mobileMenuToggle = ref(false);
-
+watch((route), () => {
+  mobileMenuToggle.value = false;
+})
 async function handleLogout(){
   try{
     await authStore.logout();

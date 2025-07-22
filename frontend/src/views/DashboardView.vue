@@ -2,7 +2,7 @@
   <div class="decks-view-root rel m0a">
 
 
-    <button @click="modals.importDeck = true">Import Deck</button>
+    <!-- <button @click="modals.importDeck = true">Import Deck</button> -->
 
     <TransitionOverlay :show="modals.importDeck" @hide="modals.importDeck = false">
       <div>
@@ -49,13 +49,13 @@
         </form>
       </div>
     </TransitionOverlay>
-    <div>
+    <!-- <div>
       <div>Tag Mode: </div>
       <div class="flex gap">
         <button :class="{'selected-btn': tagMode === '$in'}" @click="setTagMode('$in')">OR</button>
         <button :class="{'selected-btn': tagMode === '$all'}" @click="setTagMode('$all')">AND</button>
       </div>
-    </div>
+    </div> -->
 
     <TheHeader header="Dashboard" />
 
@@ -168,6 +168,12 @@
         <h2 class="tac">Cards</h2>
         <ContentLoadedTransition> 
           <table v-if="cards.length">
+            <colgroup>
+              <col style="width:3rem">      <!-- checkbox -->
+              <col class="front-col">       <!-- Front -->
+              <col class="back-col">        <!-- Back -->
+              <col style="width:4rem">      <!-- Edit icon -->
+            </colgroup>
             <thead>
               <tr>
                 <th>
@@ -204,11 +210,11 @@
               </tr>
             </tbody>
           </table>
-          <div v-else class="table-filler"></div>
+          
         </ContentLoadedTransition>
         
       </section>
-      <section>
+      <section class="control-section">
         <h2>Controls</h2>
         <div class="flex col control-wrap gap">
           <button :disabled="!selectedCards.length" @click="modals.dueDate = true">Set Due Date</button>
@@ -799,12 +805,7 @@ onUnmounted(() => document.body.removeEventListener('click', handleBodyClick));
 
 
 <style scoped>
-.clamp{
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-} 
+
 button{
   padding: 0;
 }
@@ -815,7 +816,7 @@ button{
   border-radius: 1rem;
 }
 .scroll-container{
-  flex: 0 1 260px;
+  flex: 0 0 250px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -871,10 +872,7 @@ button{
 .deck-tag-controls > ul{
   margin-top: 1rem;
 }
-.table-pane{
-  min-height: 0;
-  overflow: auto;
-}
+
 .control-wrap > button{
   padding: .2em .4em;
   background: white;
@@ -911,14 +909,31 @@ button{
   margin-top: .2rem;
   margin-bottom: .2rem;
 }
+
+img{
+  width: 24px;
+}
+.clamp{
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+         /* make sure nowrap isn't active      */
+  overflow-wrap: anywhere;      /* break *inside* long tokens         */
+  word-break: break-word;       /* legacy fallback                    */
+} 
+
+colgroup col.front-col  { width: 45%; }
+colgroup col.back-col   { width: 45%; }
+
+.table-pane{
+  min-height: 0;
+  overflow: auto;
+  flex: 1 0 450px;
+}
 table{
   border-collapse: collapse;
   table-layout: auto;
-  
-  width: 500px;
-}
-img{
-  width: 24px;
 }
 .td-c{
   text-align:center;
@@ -930,10 +945,8 @@ td > button{
   align-items: center;
 }
 .deck-name{
-  max-width: 250px;
-  min-width: 150px;
-
-  word-wrap: break-word;
+  
+word-wrap: break-word;
 }
 .deck-name-link{
   width: 100%;
@@ -948,9 +961,6 @@ th, td{
   padding: .5rem;
 }
 
-.table-filler{
-  width: 500px;
-}
 tr:nth-child(even){
   background: #c2c2c21c;
 }
@@ -970,9 +980,14 @@ ul{
   margin: 0;
 }
 
-
 .or-and-btn-group, .filler-margin{
   margin-top: var(--custom-margin);
 }
 
+
+@media(max-width: 1000px){
+  .control-section{
+    display: none;
+  }
+}
 </style>

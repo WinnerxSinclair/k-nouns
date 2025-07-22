@@ -13,9 +13,10 @@
 import { RouterView } from 'vue-router';
 import AppHeader from './components/header/AppHeader.vue';
 import Toast from './components/widgets/Toast.vue';
-import { useToastStore } from './stores/toastStore.js';
 
-const toastStore = useToastStore();
+
+
+
 </script>
 
 <style scoped>

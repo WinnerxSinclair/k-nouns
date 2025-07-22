@@ -8,11 +8,15 @@ export const validate = (raw, errForm, schema) => {
     const { fieldErrors } = zodRes.error.flatten();
     Object.assign(errForm.value, fieldErrors);
   }
+  
   return zodRes.success;
 }
-
 
 export const validateNoRender = (raw, schema) => {
   const zodRes = schema.safeParse(raw);
   return zodRes.success;
+}
+
+function resetErrorForm(errForm){
+  Object.keys(errForm.value).forEach(k => errForm.value[k] = []);
 }

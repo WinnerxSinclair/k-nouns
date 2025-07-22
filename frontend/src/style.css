@@ -9,7 +9,7 @@
   --bg-color: #f9f8f3;
   --accent-dark: rgb(17, 19, 46);
   --accent-light: rgba(17, 19, 46, 0.315);
-
+  --alt-bg: rgb(17, 19, 46);
 
   --btn-bg-primary: rgb(17, 19, 46);
   --btn-color-primary: rgba(255, 255, 255, 0.87);
@@ -20,7 +20,7 @@
   --outline-primary: rgb(0, 0, 0);
   --outline-thickness: 1px;
   --pill: 9999px;
-
+  --app-max-w: 1920px;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -61,6 +61,7 @@ body{
 }
 
 html, body, #app { height: 100%; }
+
 h2,h3,h4,h5,h6{
   font-family:'Courier New', Courier, monospace;
 }
@@ -187,7 +188,11 @@ button:disabled {
 .tac{
   text-align:center;
 }
-
+.line{
+  flex-grow: 1;
+  height: 1px;
+  background: grey;
+}
 
 /* positioning */
 .rel{
@@ -213,11 +218,14 @@ button:disabled {
 .mla{
   margin-left: auto;
 }
+
 /* padding */
 .pad{
   padding: 1rem;
 }
-
+.pad-0{
+  padding: 0;
+}
 /* display */
 
 .ib{
@@ -245,8 +253,12 @@ button:disabled {
   gap: .5cap;
 }
 
-
-
+.w-100{
+  width: 100%;
+}
+.w-fc{
+  width: fit-content;
+}
 
 /* EDIT CARD CREATE CARD */
 .arrow-btn{

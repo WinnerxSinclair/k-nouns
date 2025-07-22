@@ -8,7 +8,6 @@ export const TAG_MAX_LEN = 40;
 export const TAG_ARR_MAX_LEN = 10;
 
 
-
 //for getting/filtering
 export const MAX_DECKS = 100;
 export const MAX_TAGS = 200;
@@ -21,5 +20,14 @@ export const MAX_CARDS = 2000;
 
 //editing decks
 export const DECK_MAX_LEN = 60;
+
+//auth
+export const PW_MAX_LEN = 4096;
+export const EMAIL_MAX_LEN = 500;
+
+
+
+
+
 
 export const hex24 = /^[a-f\d]{24}$/i;

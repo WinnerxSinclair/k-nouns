@@ -213,47 +213,27 @@ const createCard = asyncHandler(async (req, res) => {
   } = req.body;
   const { deckId } = req.params;
   const uid = req.profile._id;
-  const cardId = crypto.randomUUID();
 
+  const pairId = mirror ? crypto.randomUUID() : undefined;
 
-  const session = await startSession();
-  session.startTransaction();
-  try{
-    const pairId = mirror ? crypto.randomUUID() : undefined;
+  const baseDoc = {
+    uid,
+    deckId,
+    context,
+    explanation,
+    tags, 
+  };
+  
+  const docs = mirror
+    ? [
+        { ...baseDoc, pairId, front, back },
+        { ...baseDoc, pairId, front: back, back: front }
+      ]
+    : [ {...baseDoc, front, back }];
 
-    
-    const baseDoc = {
-      uid,
-      cardId,
-      deckId,
-      context,
-      explanation,
-      tags,
-      
-    }
-    
-    const docs = mirror
-      ? [
-          { ...baseDoc, pairId, front, back },
-          { ...baseDoc, pairId, front: back, back: front }
-        ]
-      : [ {...baseDoc, front, back }] 
+  await Card.insertMany(docs);
 
-    await Card.insertMany(docs, { session });
-
-   
-    if(tags.length){ //DECK TAG STUFF MIGHT REMOVE LATER
-      await Deck.findByIdAndUpdate(deckId, { $addToSet: { tags: { $each: tags} } }, { session });
-    }
-    await session.commitTransaction();
-    res.status(201).json({ message: 'card added' });
-  }catch(err){
-    await session.abortTransaction();
-    console.error(err);
-    next(err);
-  }finally{
-    await session.endSession();
-  }
+  res.status(201).json({ message: 'card added' });
 
 });
 

@@ -1,49 +1,83 @@
 <template>
-  <div class="flex col ac">
-    <TheHeader header="케이-나운즈에 오신 것을 환영합니다!" />
-    <TheForm :fields="fields" :rt="false" @submit="handleSubmit"/>
+  
+  <TheHeader header="Welcome!" />
+  <div class="flex col ac gap form-wrap">
+    <TheForm @submit="handleSubmit" :submitting="submitting" submittingMsg="Logging in...">
+      <Input 
+        type="email" 
+        label="Email" 
+        v-model="form.email"
+      />
+      <Input 
+        type="password" 
+        label="Password" 
+        v-model="form.password"
+      />
+    </TheForm>
+    <div v-if="invalidCredentials">Invalid Credentials</div>
+
+    <div class="flex ac jc w-100">
+      <div class="line"></div>
+      <div>OR</div>
+      <div class="line"></div>
+    </div>
+
+    <GoogleButton />
+  
     <div class="mt-3">No Account? <RouterLink to="/register">Sign up Here</RouterLink></div>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref } from 'vue'
 import { useAuthStore } from '../stores/authStore.js';
 import TheForm from '../components/TheForm.vue';
+import Input from '../components/Input.vue';
 import TheHeader from '../components/TheHeader.vue';
-import router from '../router'
+import GoogleButton from '../components/GoogleButton.vue';
+import { loginSchema } from '@zod/auth.js';
+import { validateNoRender } from '../helpers/validate.js';
+import { FirebaseError } from 'firebase/app';
+import { useRouter } from 'vue-router';
+const router = useRouter();
+const form = ref({
+  email: '',
+  password: '',
+});
 
+
+const submitting = ref(false);
+const invalidCredentials = ref(false);
 let authStore = useAuthStore();
 
-
-
-const validations = {
-  email: {
-    required: true,
-    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    ui_pattern: /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov)$/i,
-    messages: {
-      required: 'Email is required',
-      pattern: 'Invalid email format'
-    }
-  },
-
-}
-const fields = [
-  { name: 'email', label: 'Email', type: 'text', validation: validations.email },
-  { name: 'password', label: 'Password', type: 'password', validation: validations.password }
-];
-
-
-async function handleSubmit(formData) {
+async function handleSubmit() {
+  if(submitting.value) return;
+  submitting.value = true;
+  invalidCredentials.value = false;
   try {
-    // call the store’s login action
-    await authStore.login(formData.email, formData.password)
-    router.push('/decks')
+    if(!validateNoRender(form.value, loginSchema)){
+      invalidCredentials.value = true;
+      return;
+    }
+    await authStore.login(form.value.email, form.value.password);
+    router.push('/decks');
   } catch (err) {
+    if(err instanceof FirebaseError){
+      invalidCredentials.value = true;
+    }
     console.error('Login failed', err)
-    // you can surface an error message here
+  }finally{
+    submitting.value = false;
   }
 }
+
 </script>
+
+<style scoped>
+
+.form-wrap{
+  width: clamp(350px, 100%, 400px);
+  margin: 0 auto;
+}
+</style>
 

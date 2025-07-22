@@ -1,28 +1,31 @@
 <template>
   <ContentLoadedTransition>
-    <div v-if="card" class="card">
-      <div class="grade-btn-wrap flex gap jc" v-if="seedCalculations.length">
+    <div  class="card">
+      <div class="grade-btn-wrap flex gap jc">
         <div class="flex col ac" v-for="(btn, i) in gradeBtnsInfo" :key="btn.name">
           <div>{{ seedCalculations[i] }}{{ btn.suffix }}</div>
-          <button :disabled="loading" @click="grade(btn.value)">{{ btn.name }}</button>
+          <button @click="grade(btn.value)">{{ btn.name }}</button>
         </div>
       </div>
     
-      <div class="tac fs-600">{{ card.front }}</div>
-      <div v-if="showBack" class="tac">
-        <div class="line"></div>
-        <div class="fs-600">{{ card.back }}</div>
-      </div>
+      <div v-if="card">
 
-      <div v-if="showExplanation" class="explanation">
-        <div class="line"></div>
-        <div v-html="markedExplanation"></div>
-      </div>
-      <div class="tac mt-3">
-        <button v-if="!showBack" @click="showBack = true">Show Answer</button>
-        <button v-if="card.explanation && showBack && !showExplanation" @click="showExplanation = true">
-          Show Explanation
-        </button>
+        <div class="tac fs-600">{{ card.front }}</div>
+        <div v-if="showBack" class="tac">
+          <div class="line"></div>
+          <div class="fs-600">{{ card.back }}</div>
+        </div>
+  
+        <div v-if="showExplanation" class="flex col">
+          <div class="line"></div>
+          <div v-html="markedExplanation"></div>
+        </div>
+        <div class="tac mt-3">
+          <button v-if="!showBack" @click="showBack = true">Show Answer</button>
+          <button v-if="card.explanation && showBack && !showExplanation" @click="showExplanation = true">
+            Show Explanation
+          </button>
+        </div>
       </div>
     </div>
   </ContentLoadedTransition>
@@ -73,6 +76,7 @@ watch(() => props.card, () => {
 });
 
 function grade(q){
+  if(!seedCalculations.value.length) return;
   emit('grade', q);
 }
 </script>
@@ -89,8 +93,7 @@ function grade(q){
   width: min(60ch, 50vw);
   height: 2px;
   background: black;
-  margin-top:1.5rem;
-  margin-bottom: 1.5rem;
+  margin: 1.5rem auto 1rem auto;
 }
 button{
   background-color: var(--btn-bg-primary);

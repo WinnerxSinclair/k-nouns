@@ -8,7 +8,7 @@
     </p>
 
     <!-- Resend section -->
-    <button @click="resend" :disabled="sending">
+    <button @click="resend" :disabled="sending" class="btn-main">
       {{ sending ? 'Sending…' : 'Resend Verification Email' }}
     </button>
 
@@ -19,10 +19,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { getAuth, sendEmailVerification } from 'firebase/auth'
+import { sendEmailVerification } from 'firebase/auth'
+import { auth } from '../firebase.js'
 import { useRouter } from 'vue-router'
 
-const auth     = getAuth()
+
 const router   = useRouter()
 const sending  = ref(false)
 const error    = ref('')
@@ -33,7 +34,7 @@ async function resend() {
   success.value = ''
   sending.value = true
 
-  // If they somehow got signed out, send them back to login
+  
   if (!auth.currentUser) {
     error.value = 'Session expired — please log in again.'
     sending.value = false

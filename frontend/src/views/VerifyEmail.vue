@@ -11,12 +11,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getAuth, applyActionCode } from 'firebase/auth'
+import { auth } from '../firebase.js'
 import { useRoute, useRouter } from 'vue-router'
 
 const status = ref('loading')
 const route  = useRoute()
 const router = useRouter()
-const auth    = getAuth()
 
 onMounted(async () => {
   const oobCode = route.query.oobCode
@@ -25,10 +25,10 @@ onMounted(async () => {
   try {
     await applyActionCode(auth, oobCode)
     status.value = 'success'
-    // Optionally reload the user so that `user.emailVerified` updates
-    await auth.currentUser?.reload()
-    // Maybe redirect to login after a pause:
-    setTimeout(() => router.push('/login'), 3000)
+    
+    await auth.currentUser?.reload();
+    await auth.currentUser?.getIdToken(true);
+    setTimeout(() => router.push('/create'), 3000)
   } catch (err) {
     if (err.code === 'auth/expired-action-code') {
       status.value = 'expired'
@@ -36,5 +36,5 @@ onMounted(async () => {
       status.value = 'error'
     }
   }
-})
+});
 </script>

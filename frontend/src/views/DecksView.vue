@@ -225,6 +225,7 @@ input[type="checkbox"]{
 
 .decks-view-root{
   --custom-margin: 3rem;
+  margin-top: 2rem;
 }
 
 .test-grid{

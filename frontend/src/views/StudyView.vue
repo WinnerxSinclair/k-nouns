@@ -1,5 +1,5 @@
 <template>
-  <div class="flex jc">    
+  <div class="grid cmt">    
     <Flashcard :card="currentCard" :loading="loading" />
     
     <p v-if="noMoreCards" class="tac">No More Cards!</p>
@@ -27,7 +27,6 @@ async function getBatch() {
   loading.value = true;
   try {
     const { cards } = await getCardBatch({ 
-      want: 10, 
       decks: deckStore.selectedFilters.decks, 
       tags: deckStore.selectedFilters.tags,
       conditional: deckStore.queryConditional 
@@ -64,6 +63,7 @@ async function gradeCard_local(grade){
   loading.value = true;
   try{
     const card = currentCard.value;
+    currentCard.value = null;
     await gradeCard({ card, grade });
     if(queue.value.length === 0){
       await getBatch();
@@ -78,8 +78,7 @@ async function gradeCard_local(grade){
 
 
 onMounted(async () => {
-  await getBatch()
-  console.log(queue.value)
+  await getBatch();
   showCard();
 });
 
@@ -91,3 +90,13 @@ onUnmounted(() => {
   }
 });
 </script>
+
+<style scoped>
+.cmt{
+  margin-top: 5rem;
+}
+.grid{
+  display: grid;
+  justify-content: center;
+}
+</style>

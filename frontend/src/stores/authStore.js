@@ -4,22 +4,23 @@ import { auth } from '../firebase.js'                       // your firebase.js
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
+  GoogleAuthProvider
 } from 'firebase/auth'
 
 import { ref } from 'vue'
 export const useAuthStore = defineStore('auth', () => {
   // state
   const user = ref(null)
-  const isReady = ref(false);
+
   // actions
   function init() {
     return new Promise(resolve => {
       onAuthStateChanged(auth, u => {
         user.value = u
-        isReady.value = true
         resolve()
       })
     })
@@ -29,17 +30,22 @@ export const useAuthStore = defineStore('auth', () => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     await sendEmailVerification(userCredential.user, {
       url: window.location.origin + '/verify-email',  
-      handleCodeInApp: true   // optional but recommended for SPA flows
+      handleCodeInApp: true   
     })
   }
 
   function login(email, password) {
-    return signInWithEmailAndPassword(auth, email, password)
+     return signInWithEmailAndPassword(auth, email, password)
+  }
+
+  async function googleSignin(){
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
   }
 
   function logout() {
-    return signOut(auth)
+    return signOut(auth);
   }
 
-  return { user, init, register, login, logout, isReady }
+  return { user, init, register, login, logout, googleSignin }
 })

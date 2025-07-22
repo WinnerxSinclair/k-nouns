@@ -1,6 +1,6 @@
 <template>
   <div class="outermost">
-    <TheHeader />
+    <AppHeader />
   
     <main class="grow rel">
       <Toast />
@@ -11,7 +11,7 @@
 
 <script setup>
 import { RouterView } from 'vue-router';
-import TheHeader from './components/header/TheHeader.vue';
+import AppHeader from './components/header/AppHeader.vue';
 import Toast from './components/widgets/Toast.vue';
 import { useToastStore } from './stores/toastStore.js';
 
@@ -24,11 +24,7 @@ const toastStore = useToastStore();
   display:flex;
   flex-direction: column;
 }
-.sidebar{
-  background:rgb(17, 19, 46);
-  color:white;
- 
-}
+
 main{
   display:flex;
   flex-direction: column;

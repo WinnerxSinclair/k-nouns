@@ -13,6 +13,11 @@ import CreateView from '../views/CreateView.vue';
 
 const routes = [
   {
+    path: '/',
+    component: DecksView,
+    meta: { requiresAuth: true, requiresVerify: true } 
+  },
+  {
     path: '/login',
     component: LoginView
   },
@@ -27,7 +32,7 @@ const routes = [
     meta: { requiresAuth: true, requiresVerify: true }  
   },
   {
-    path: '/decks',
+    path: '/study',
     component: DecksView,
     meta: { requiresAuth: true, requiresVerify: true }  
   },

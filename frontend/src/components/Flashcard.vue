@@ -18,7 +18,7 @@
   
         <div v-if="showExplanation" class="flex col">
           <div class="line"></div>
-          <div v-html="markedExplanation"></div>
+          <div v-html="markedExplanation" class="pad"></div>
         </div>
         <div class="tac mt-3">
           <button v-if="!showBack" @click="showBack = true">Show Answer</button>

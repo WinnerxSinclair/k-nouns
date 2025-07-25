@@ -57,27 +57,30 @@
       </div>
     </div> -->
 
-    <TheHeader header="Dashboard" />
+    <!-- <TheHeader header="Dashboard" /> -->
+    <h1 class="tac dashboard-heading">Dashboard</h1>
 
-    <section>
-      <h2 class="tac">Query</h2>
+    <section class="desktop-query">
+      <button 
+        class="btn-main big-btn m0a query-btn"
+        :class="{'visual-disable': !newQuery}" 
+        @click="handleQueryClick"
+      >
+        {{ querying ? 'Fetching...' : 'Query' }}
+      </button>
       <div class="flex jc">
         <div class="query-container">
           <h3>Decks</h3>
           <ul class="flex wrap gap">
-            <li v-for="deck in selectedDecksIdNamePairs" :key="deck._id" class="query-li decks">
-              <div>{{ deck.name }}</div>
-              <button @click="removeFromQuery(deck._id, 'decks')">X</button>
+            <li v-for="deck in selectedDecksIdNamePairs" :key="deck._id" class="query-li decks">    
+              <button @click="removeFromQuery(deck._id, 'decks')">{{ deck.name }}</button>   
             </li>
           </ul>
           <div class="spacer"></div>
           <h3>Tags</h3>
           <ul class="flex wrap gap">
             <li v-for="tag in selectedTagsArr" :key="tag" class="query-li tags">
-              <div>
-                {{ tag }}
-              </div>
-              <button @click="removeFromQuery(tag, 'tags')">X</button>
+              <button @click="removeFromQuery(tag, 'tags')">{{ tag }}</button>
             </li>
           </ul>
         </div>
@@ -96,7 +99,7 @@
             <ul class="flex col gap-0">
               <li class="flex ac gap-1" v-for="deck in deckStore.decks" :key="deck._id">
                 <div class="rel">                  
-                  <button class="flex ac popupBtn" @click="openMiniEditDeckPopup(deck.name)">
+                  <button class="flex ac popupBtn pad-0" @click="openMiniEditDeckPopup(deck.name)">
                     <svg class="block" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/><path d="M20,6h-8l-2-2H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16.77c0.68,0,1.23-0.56,1.23-1.23V8C22,6.9,21.1,6,20,6z M20,18L4,18V6h5.17l2,2H20V18z M18,12H6v-2h12V12z M14,16H6v-2h8V16z"/></g></svg>
                   </button>
                   <div class="abs deck-tag-controls editPopup" v-if="selectedDeckEdit === deck.name">
@@ -109,9 +112,9 @@
                       <li>
                         <button @click="handleEditDeckClick(deck._id, deck.name)">Rename Deck</button>
                       </li>
-                      <li>
+                      <!-- <li>
                         <button @click="handleExportDeckClick(deck._id, deck.name)">Export Deck</button>
-                      </li>
+                      </li> -->
                     </ul>
                   </div>
                 </div>
@@ -134,7 +137,7 @@
             <ul class="flex col gap-0">
               <li class="flex ac gap-1" v-for="tag in deckStore.tags" :key="tag">
                 <div class="rel">                  
-                  <button class="flex ac popupBtn" @click="openMiniEditTagPopup(tag)">
+                  <button class="flex ac popupBtn pad-0" @click="openMiniEditTagPopup(tag)">
                     <svg class="block" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="m21.41 11.58-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM13 20.01 4 11V4h7v-.01l9 9-7 7.02z"/><circle cx="6.5" cy="6.5" r="1.5"/></svg>
                   </button>
                   <div class="abs deck-tag-controls editPopup" v-if="selectedTagEdit === tag">
@@ -159,10 +162,8 @@
                 </button>
               </li>
             </ul>
-          </section>
-        
+          </section>  
       </div>
-      
       
       <section class="table-pane">
         <h2 class="tac">Cards</h2>
@@ -226,6 +227,185 @@
       </section>
     </div>
 
+
+    <!-- MOBILE START -->
+    <div class="mobile-root">
+       <section v-if="!showCardTable">
+          <button 
+            class="btn-main big-btn m0a query-btn"
+            :class="{'visual-disable': !newQuery}" 
+            @click="handleMobileQueryClick"
+          >
+            {{ querying ? 'Fetching...' : 'Query' }}
+          </button>
+          <div class="flex jc">
+            <div class="query-container">
+              <h3>Decks</h3>
+              <ul class="flex wrap gap">
+                <li v-for="deck in selectedDecksIdNamePairs" :key="deck._id" class="query-li decks">    
+                  <button @click="removeFromQuery(deck._id, 'decks')">{{ deck.name }}</button>   
+                </li>
+              </ul>
+              <div class="spacer"></div>
+              <h3>Tags</h3>
+              <ul class="flex wrap gap">
+                <li v-for="tag in selectedTagsArr" :key="tag" class="query-li tags">
+                  <button @click="removeFromQuery(tag, 'tags')">{{ tag }}</button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+       
+       <fieldset class="flex gap m0a" v-if="!showCardTable">
+         <div class="flex gap-0 ac">
+            <label for="single">Single</label>
+            <input value="single" id="single" type="radio" name="mobile-query-controls" v-model="mobileRadio">
+         </div>
+         <div class="flex gap-0 ac">
+            <label for="combine">Combine</label>
+            <input id="combine" value="combine" type="radio" name="mobile-query-controls" v-model="mobileRadio">
+         </div>
+       </fieldset>
+       
+       <div class="scroll-container" v-if="!showCardTable">
+          <section v-if="deckStore.decks.length">
+            <h2 >Decks</h2>
+            <ul class="flex col gap-0">
+              <li class="flex ac gap-1" v-for="deck in deckStore.decks" :key="deck._id">
+                
+                <div class="rel">
+                                   
+                  <button class="flex ac popupBtn pad-0" @click="openMiniEditDeckPopup(deck.name)">
+                    <svg class="block" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/><path d="M20,6h-8l-2-2H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16.77c0.68,0,1.23-0.56,1.23-1.23V8C22,6.9,21.1,6,20,6z M20,18L4,18V6h5.17l2,2H20V18z M18,12H6v-2h12V12z M14,16H6v-2h8V16z"/></g></svg>
+                  </button>
+                  <div class="abs deck-tag-controls editPopup" v-if="selectedDeckEdit === deck.name">
+                    <h4>{{ `${deck.name}` }}</h4>
+                    <hr>
+                    <ul class="flex col gap">
+                      <li>
+                        <button @click="handleDeleteDeckClick(deck._id, deck.name)">Delete Deck</button>
+                      </li>
+                      <li>
+                        <button @click="handleEditDeckClick(deck._id, deck.name)">Rename Deck</button>
+                      </li>
+                      <!-- <li>
+                        <button @click="handleExportDeckClick(deck._id, deck.name)">Export Deck</button>
+                      </li> -->
+                    </ul>
+                  </div>
+                </div>
+                <!-- <RouterLink :to="`/deck/${deck._id}`">abc</RouterLink> -->
+                <button 
+                  @click="mobileAddToQuery(deck._id, 'decks')" 
+                  class="name-btn"
+                  :class="{ 'selected-query': querySets.decks.has(deck._id)}"
+                >
+                  {{ deck.name }}
+                </button>
+              </li>
+            </ul>
+          </section>
+      
+          <section v-if="deckStore.tags.length">
+            <h2 >Tags</h2>
+            <ul class="flex col gap-0">
+              <li class="flex ac gap-1" v-for="tag in deckStore.tags" :key="tag">
+                <div class="rel">                  
+                  <button class="flex ac popupBtn pad-0" @click="openMiniEditTagPopup(tag)">
+                    <svg class="block" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="m21.41 11.58-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM13 20.01 4 11V4h7v-.01l9 9-7 7.02z"/><circle cx="6.5" cy="6.5" r="1.5"/></svg>
+                  </button>
+                  <div class="abs deck-tag-controls editPopup" v-if="selectedTagEdit === tag">
+                    <h4>{{ `${tag}` }}</h4>
+                    <hr>
+                    <ul class="flex col gap">
+                      <li>
+                        <button @click="handleDeleteTagClick(tag)">Delete Tag</button>
+                      </li>
+                      <li>
+                        <button @click="handleEditTagClick(tag)">Rename Tag</button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <button 
+                  @click="mobileAddToQuery(tag, 'tags')" 
+                  class="name-btn"
+                  :class="{ 'selected-query': querySets.tags.has(tag)}"
+                >
+                  {{ tag }}
+                </button>
+              </li>
+            </ul>
+          </section>
+        
+      </div>
+
+      
+      <section v-if="showCardTable" class="flex col grow">
+        <button @click="showCardTable = false" class="btn-main back-to-query-btn mt-3">Back to Query</button>
+        <h2 class="tac">Cards</h2>
+              
+
+        <div class="flex jc pad control-wrap wrap gap">
+          <button :disabled="!selectedCards.length" @click="modals.dueDate = true">Set Due Date</button>
+          <button :disabled="!selectedCards.length" @click="modals.reset = true">Reset</button>
+          <button :disabled="!selectedCards.length" @click="modals.addTag = true">Add Tag</button>
+          <button :disabled="!selectedCards.length" @click="modals.removeTag = true">Remove Tag</button>
+          <button :disabled="!selectedCards.length" @click="modals.delete = true">Delete</button>
+        </div>
+     
+        <div class="table-pane">
+          <ContentLoadedTransition> 
+            <table v-if="cards.length">
+              <colgroup>
+                <col style="width:3rem">      <!-- checkbox -->
+                <col class="front-col">       <!-- Front -->
+                       <!-- Back -->
+                <col style="width:4rem">      <!-- Edit icon -->
+              </colgroup>
+              <thead class="thead">
+                <tr>
+                  <th>
+                    <input ref="mobileMaster" type="checkbox" @change="handleMasterSwitch">
+                  </th>             
+                  <th>Front</th>
+                  
+                  <th>Edit</th>
+                </tr>
+              </thead>
+              <tbody >
+                <tr v-for="card in cards" :key="card._id">            
+                  <td >
+                    <div class="flex ac jc">
+                      <input 
+                        type="checkbox" 
+                        :value="card._id"
+                        v-model="selectedCards"
+                      >
+                    </div>
+                  </td>
+                
+                  <td class="deck-name" >
+                    <div class="clamp">
+                      {{ card.front }}
+                    </div>
+                  </td>
+          
+                  <td @click="handleEditRoute(card._id)" >
+                    <img src="../assets/pencil.png" alt="">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            
+          </ContentLoadedTransition>
+        </div>
+        
+        
+      </section>
+    </div>
+
     <ModalForm 
       @submit="handleDeckRename" 
       @hide="resetModals(deckRenameErrors)" 
@@ -273,7 +453,7 @@
       :errors="addRemoveTagErrors.tag"
     />
 
-    <TransitionOverlay :show="modals.deleteDeck" @hide="modals.deleteDeck = false" :lock="lock">
+    <TransitionOverlay :show="modals.deleteDeck" @hide="modals.deleteDeck = false">
       <Confirmation 
         @cancel="modals.deleteDeck = false"
         @confirm="handleDeckDelete" 
@@ -308,7 +488,7 @@
       :errors="tagRenameErrors.tag" 
     /> 
 
-    <TransitionOverlay :show="modals.reset" @hide="modals.reset = false" :lock="lock">
+    <TransitionOverlay :show="modals.reset" @hide="modals.reset = false">
       <Confirmation 
         @cancel="modals.reset = false"
         @confirm="handleResetSrs" 
@@ -318,7 +498,7 @@
       />
     </TransitionOverlay>
 
-    <TransitionOverlay :show="modals.delete" @hide="modals.delete = false" :lock="lock">
+    <TransitionOverlay :show="modals.delete" @hide="modals.delete = false">
       <Confirmation 
         @cancel="modals.delete = false"
         @confirm="handleBulkDelete" 
@@ -329,7 +509,7 @@
       />
     </TransitionOverlay>
 
-    <TransitionOverlay :show="modals.deleteTag" @hide="modals.deleteTag = false" :lock="lock">
+    <TransitionOverlay :show="modals.deleteTag" @hide="modals.deleteTag = false">
       <Confirmation 
         @cancel="modals.deleteTag = false"
         @confirm="handleTagDelete" 
@@ -399,7 +579,9 @@ const cards = ref([]);
 const cardId = ref(null);
 const selectedCards = ref([]); //ids
 const master = useTemplateRef('master');
+const mobileMaster = useTemplateRef('mobileMaster')
 const lock = ref(false);
+const showCardTable = ref(false);
 
 const importDeckOption = ref(null);
 const importDeckForm = ref({
@@ -430,7 +612,8 @@ const cardIds = computed(() => cards.value.map((c) => c?._id));
 
 //table checkboxes master logic
 watch(selectedCards, () => {
-  const el = master.value;
+  
+  const el = showCardTable.value ? mobileMaster.value : master.value;
   if (!el) return;                
   if(!cards.value.length) return;
   el.checked       = selectedCards.value.length === cards.value.length;
@@ -438,8 +621,11 @@ watch(selectedCards, () => {
                      selectedCards.value.length < cards.value.length;
 });
 
+
+
 function handleMasterSwitch(){
-  let checked = master.value.checked;
+  let checked = showCardTable.value ? mobileMaster.value.checked : master.value.checked;
+  console.log(checked);
   if(checked){
     selectedCards.value = cardIds.value;
   }else{
@@ -588,26 +774,53 @@ function handleEditRoute(id){
   router.push(`/card/${id}`);
   cardId.value = id;
 }
+const newQuery = ref(false);
 function addToQuery(payload, set, e){
   if(!e.ctrlKey){
     resetQuerySets();
   }
   querySets[set].add(payload);
-  somethingChangedLetsFetchCards();
+  newQuery.value = true;
 }
 function removeFromQuery(payload, set){
-  console.log(payload);
   querySets[set].delete(payload);
+  newQuery.value = true;
+}
+
+const mobileRadio = ref('single');
+function mobileAddToQuery(payload, set){
+  if(mobileRadio.value === 'single'){
+    resetQuerySets();
+  }
+  if(querySets[set].has(payload)){
+    querySets[set].delete(payload);
+  }else{
+    querySets[set].add(payload);
+  }
+  newQuery.value = true;
+}
+
+
+function handleQueryClick(){
+  if(!newQuery.value) return;
   somethingChangedLetsFetchCards();
 }
+function handleMobileQueryClick(){
+  if(!newQuery.value) return;
+  showCardTable.value = true;
+  somethingChangedLetsFetchCards();
+}
+const querying = ref(false);
 async function somethingChangedLetsFetchCards(){
+  if(querying.value) return;
   let deckArr = Array.from(querySets.decks);
   let tagArr = Array.from(querySets.tags);
   if(!deckArr.length && !tagArr.length){
     cards.value = [];
     selectedCards.value = [];
     return;
-  } 
+  }
+  querying.value = true; 
   try{
     cards.value = await getDashboardCards({ 
       decks: deckArr, 
@@ -615,9 +828,12 @@ async function somethingChangedLetsFetchCards(){
       conditional: tagMode.value 
     });
     selectedCards.value = [];
+    newQuery.value = false;
     console.log(cards.value)
   }catch(err){
     console.error(err);
+  }finally{
+    querying.value = false;
   }
 }
 
@@ -805,9 +1021,22 @@ onUnmounted(() => document.body.removeEventListener('click', handleBodyClick));
 
 
 <style scoped>
-
-button{
-  padding: 0;
+.dashboard-heading{
+  margin-top: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+.query-btn{
+  padding: .5em 1em;
+  font-size: 1.2rem;
+  display: block;
+  background: var(--btn-bg-primary);
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  border-radius: 1rem;
+  border: none;
+  border-bottom: 4px solid rgb(245, 218, 196);
+}
+.visual-disable{
+  background: grey;
 }
 .query-container{
   width: clamp(350px, 100%, 70ch);
@@ -838,11 +1067,8 @@ button{
   gap: 1rem;
   width: 300px;
 }
-.query-li{
-  display: flex;
-  gap: 1rem;
-  padding: .2em .8em;
-  border-radius: 9em;
+.query-li > button{
+  
 }
 .query-li.decks{
   background: rgb(253, 208, 124);
@@ -966,13 +1192,11 @@ tr:nth-child(even){
 }
 .decks-view-root{
   --custom-margin: 3rem;
-  /* max-width: 1280px; */
   width: clamp(350px, 95%, 1280px);
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  
 }
 
 ul{
@@ -983,11 +1207,59 @@ ul{
 .or-and-btn-group, .filler-margin{
   margin-top: var(--custom-margin);
 }
+.mobile-root{
+  display: none;
+}
 
-
-@media(max-width: 1000px){
-  .control-section{
+@media(max-width: 950px){
+  .big-flex{
     display: none;
   }
+  .mobile-root{
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  .scroll-container{
+    max-width: 250px;
+    margin: 0 auto;
+    margin-top: 1rem;
+    flex-grow: 1;
+  }
+  .dashboard-heading{
+    font-size: 1.2rem;
+    margin-top: 0;
+    margin-bottom: .5rem;
+    display: none;
+  }
+  .table-pane{
+    flex: 1 0 350px;
+  }
+  colgroup col.front-col{
+    width: 90%;
+  }
+  .desktop-query{
+    display: none;
+  }
+  .filler-margin{
+    display: none;
+  }
+  .query-btn{
+    margin-top: 1rem;
+  }
+  .back-to-query-btn{
+    width: fit-content;
+    margin: 0 auto;
+    margin-top: 1rem;
+  }
+  .query-li{
+    padding: .1em .25em;
+  }
+  .query-li > button{
+    font-size: .8rem;
+  }
+
 }
 </style>

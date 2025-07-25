@@ -78,6 +78,7 @@ async function handleSubmit() {
 .form-wrap{
   width: clamp(350px, 100%, 400px);
   margin: 0 auto;
+  padding: 1rem;
 }
 </style>
 

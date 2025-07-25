@@ -11,7 +11,7 @@
       <nav class="pad flex jsb grow nav">
         <div class="flex gap">        
           <RouterLink to="/dashboard">Dashboard</RouterLink>
-          <RouterLink to="/login">Study</RouterLink>
+          <RouterLink to="/study">Study</RouterLink>
           <RouterLink to="/create">Create</RouterLink>
         </div>
       
@@ -42,7 +42,7 @@
 
         <div class="flex col gap">        
           <RouterLink to="/dashboard">Dashboard</RouterLink>
-          <RouterLink to="/login">Study</RouterLink>
+          <RouterLink to="/study">Study</RouterLink>
           <RouterLink to="/create">Create</RouterLink>
         </div>
       </nav>

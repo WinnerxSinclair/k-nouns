@@ -69,6 +69,7 @@ onMounted(async () => {
 
 ul{
   list-style:none;
+  margin: 0;
 }
 
 .deck-name{

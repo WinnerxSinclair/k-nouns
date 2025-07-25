@@ -168,6 +168,9 @@ button{
   color: var(--btn-color-primary);
   border: 1px solid black;
 }
+.big-btn{
+
+}
 .img-btn{
   padding: 0;
 }
@@ -184,6 +187,9 @@ button:disabled {
   pointer-events: none; 
 }
 
+.grid{
+  display: grid;
+}
 /* text */
 .tac{
   text-align:center;

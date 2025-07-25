@@ -21,7 +21,7 @@
       <p v-if="!oneExists && !isLoading">Nothing Exists, create decks and cards in the Dashboard</p> 
     </div>
     
-    <ContentLoadedTransition>
+    <!-- <ContentLoadedTransition>
       <div v-if="bothExist" class="flex ac jc or-and-btn-group" >
         <button 
           @click="deckStore.queryConditional = '$or'"
@@ -37,7 +37,7 @@
         </button>      
       </div>
       <div v-else class="filler-margin"></div>
-    </ContentLoadedTransition>
+    </ContentLoadedTransition> -->
 
     
 
@@ -163,6 +163,7 @@ onMounted(async () => {
   gap: 5rem 12rem;
   flex-flow: row wrap;
   justify-content: center;
+  margin-top: 2rem;
 }
 .label-list > li{
   margin-top: .9rem;

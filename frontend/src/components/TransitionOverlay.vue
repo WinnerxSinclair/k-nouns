@@ -18,7 +18,8 @@ const props = defineProps({
 });
 
 function handleHide(){
-  if(!props.lock) emit('hide');
+  // if(!props.lock) emit('hide');
+  emit('hide');
 }
 </script>
 

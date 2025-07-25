@@ -70,7 +70,7 @@ async function handleSubmit() {
       return;
     }
     await authStore.register(form.value.email, form.value.password);
-    router.push('/decks')
+    router.push('/create')
   } catch (err) {
     console.error('Login failed', err)
   }
@@ -81,6 +81,7 @@ async function handleSubmit() {
 .form-wrap{
   width: clamp(350px, 100%, 400px);
   margin: 0 auto;
+  padding: 1rem;
 }
 </style>
 

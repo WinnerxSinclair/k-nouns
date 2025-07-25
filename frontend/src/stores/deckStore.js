@@ -25,7 +25,7 @@ export const useDeckStore = defineStore('deck', () => {
 
   const tagNames = computed(() => tags.value.map((tag) => tag.name));
 
-  const queryConditional = ref('$or');
+  const queryConditional = ref('$and');
 
   async function fetchDeckById(id){
     try{

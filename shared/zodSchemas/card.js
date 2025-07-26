@@ -18,7 +18,11 @@ import {
 
   MAX_CARDS,
 
-  hex24
+  MAX_EASE,
+  MAX_SRS,
+
+  hex24,
+  MIN_EASE
 } from '../constants/zod/validation.js';
 
 
@@ -51,6 +55,15 @@ export const reviewCardsSchema = z.strictObject({
   decks:       z.array(z.string().regex(hex24)).max(MAX_DECKS).default([]),
   tags:        z.array(z.string().trim()).max(MAX_TAGS).default([]),
   conditional: z.enum(['$or', '$and']).default('$or')
+});
+
+export const gradeCardsSchema = z.strictObject({
+  _id:      z.string().regex(hex24),
+  ease:     z.number().min(MIN_EASE).max(MAX_EASE),
+  lapses:   z.number().min(0).max(MAX_SRS),
+  reps:     z.number().min(0).max(MAX_SRS),
+  interval: z.number().min(0).max(MAX_SRS),
+  grade:    z.number().min(1).max(5)
 });
 
 

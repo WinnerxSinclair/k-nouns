@@ -7,6 +7,10 @@ export const TAG_MIN_LEN = 1;
 export const TAG_MAX_LEN = 40;
 export const TAG_ARR_MAX_LEN = 10;
 
+//srs
+export const MAX_EASE = 10;
+export const MIN_EASE = 1.1;
+export const MAX_SRS = 10000;
 
 //for getting/filtering
 export const MAX_DECKS = 100;

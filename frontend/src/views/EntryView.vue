@@ -55,9 +55,11 @@
       />
       <ErrorRender :errors="errorForm.explanation" />
 
-      <TheOverlay v-if="savingForm">
-        <TheSpinner />
-      </TheOverlay>
+      <Teleport to="body">
+        <LockScreen v-if="savingForm">
+          <TheSpinner />
+        </LockScreen>
+      </Teleport>
 
       <div class="mt-3 gap flex">        
         <label for="mirror">Mirror?</label>
@@ -126,11 +128,11 @@ import {
 } from '@zodConsts/validation.js'
 import TheHeader from '../components/TheHeader.vue'
 import TheTextarea from '../components/TheTextarea.vue'
-import TheOverlay from '../components/widgets/TheOverlay.vue'
 import TheSpinner from '../components/widgets/TheSpinner.vue'
 import FlatButton from '../components/buttons/FlatButton.vue'
 import TokenCount from '../components/widgets/TokenCount.vue'
 import ErrorRender from '../components/widgets/ErrorRender.vue'
+import LockScreen from '../components/LockScreen.vue'
 
 const props = defineProps({
   deckId: String

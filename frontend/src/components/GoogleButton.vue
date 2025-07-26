@@ -18,7 +18,7 @@ const { loading, error, run } = useAsyncTask();
 async function handleClick(){
   await run(async () => {
     await authStore.googleSignin();
-    router.push('/decks');
+    router.push('/create');
   });
 }
 </script>

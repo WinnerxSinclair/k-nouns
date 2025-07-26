@@ -1,6 +1,6 @@
 <template>
   <ModalTransition>
-    <TheOverlay :isModal="true" v-if="show" @click="handleHide">
+    <TheOverlay v-if="show" @close="handleHide">
       <slot />
     </TheOverlay>
   </ModalTransition>

@@ -306,8 +306,8 @@ async function schedule ({ reps, interval, ease, lapses }, quality) {
   };
 }
 
-const gradeCard = asyncHandler(async (req, res) => { //SKIPPING ZOD FOR NOW
-  const { card, grade } = req.body;
+const gradeCard = asyncHandler(async (req, res) => { 
+  const { grade, ...card } = req.body;
   const uid = req.profile._id;
  
   let gradedCard = Object.assign({}, card, await schedule(card, grade));
@@ -319,9 +319,14 @@ const gradeCard = asyncHandler(async (req, res) => { //SKIPPING ZOD FOR NOW
 });
 
 const getCardBatch = asyncHandler(async (req, res) => {
-  const { decks = [], tags = [], conditional = '$or' } = req.body;
+  let { decks = [], tags = [], conditional = '$or' } = req.body;
   const uid = req.profile._id;
   const want = 10;
+
+  if(!decks.length || !tags.length){
+    conditional = '$or';
+  } 
+
   const cardBatch = await Card.find({
     uid: uid,
     due: { $lte: Date.now() + 5*60*1000 },
@@ -329,24 +334,14 @@ const getCardBatch = asyncHandler(async (req, res) => {
   })
   .sort({ due: 1 })
   .limit(want)
+  .select('-uid')
   .lean();
 
   res.json({ cards: cardBatch });
 
 });
 
-const deleteCard = async (req, res) => { //I DONT THINK I USE THIS
-  const { cardId } = req.params;
-  const uid = req.profile._id;
-  console.log(cardId)
-  try{
-    await Card.deleteOne({ _id: cardId, uid });
-    res.json({ message: 'card deleted' });
-  }catch(err){
-    console.error(err);
-    res.status(500).json({ message: 'error deleting card' });
-  }
-}
+
 
 const getCard = async (req, res) => { 
   const { cardId } = req.params;
@@ -523,9 +518,8 @@ const bulkPatch = asyncHandler( async(req, res) => { //MIGHT NEED TO REDO FOR ZO
   return res.json({ ok: true });
 });
 
-//needs zod still
+
 const addTag = asyncHandler(async (req, res) => {
-  console.log('xd')
   const uid = req.profile._id;
   const { tag, cardIds, pairIds } = req.body;
   const filter = { uid, $or: [ { _id: { $in: cardIds } }, { pairId: { $in: pairIds } }] };
@@ -594,7 +588,6 @@ export default {
   getDeckById,
   getCardBatch,
   gradeCard,
-  deleteCard,
   dueCardCounts,
   getCard,
   updateDeckName,

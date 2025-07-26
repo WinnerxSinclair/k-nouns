@@ -6,7 +6,8 @@ import {
   updateDueDateSchema, 
   bulkPatchCardsDefaultSchema, 
   updateCardSchema,
-  dashboardCardsSchema
+  dashboardCardsSchema,
+  
 
 } from '../../shared/zodSchemas/card.js'
 
@@ -23,7 +24,6 @@ router.patch('/bulk/srs', validateBody(bulkPatchCardsDefaultSchema), cardControl
 
 router.post('/bulk', validateBody(bulkPatchCardsDefaultSchema), cardController.deleteCards);
 
-router.delete('/:cardId', cardController.deleteCard); //NEED??
 
 router.get('/:cardId', validateParams(validateMongoId('cardId')), cardController.getCard);
 

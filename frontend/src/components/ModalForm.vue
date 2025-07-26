@@ -1,6 +1,6 @@
 <template>
   <ModalTransition>
-    <TheOverlay :isModal="true" v-if="show" @click="handleHide">
+    <TheOverlay v-if="show" @close="handleHide">
       <form @submit.prevent="emitSubmit">
         <div class="flex col gap">
           <label>{{ label }}</label>

@@ -62,9 +62,11 @@ async function gradeCard_local(grade){
   if(loading.value) return;
   loading.value = true;
   try{
+    console.log(currentCard.value);
     const card = currentCard.value;
+    const { reps, interval, ease, lapses, _id } = currentCard.value;
     currentCard.value = null;
-    await gradeCard({ card, grade });
+    await gradeCard({ reps, interval, ease, lapses, _id, grade });
     if(queue.value.length === 0){
       await getBatch();
     }

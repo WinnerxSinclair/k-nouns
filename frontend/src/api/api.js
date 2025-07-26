@@ -115,7 +115,7 @@ export const getReviewBatch = async (payload) => {
   return response.data;
 }
 
-export const gradeCard = async (payload) => {
+export const gradeCard = async (payload = { ease, interval, lapses, _id, reps, grade }) => {
   const response = await api.put('/api/review/card', payload);
   return response.data;
 }

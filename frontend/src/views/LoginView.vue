@@ -60,7 +60,7 @@ async function handleSubmit() {
       return;
     }
     await authStore.login(form.value.email, form.value.password);
-    router.push('/decks');
+    router.push('/study');
   } catch (err) {
     if(err instanceof FirebaseError){
       invalidCredentials.value = true;

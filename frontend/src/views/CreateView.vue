@@ -15,6 +15,7 @@
     @hide="modals.addDeck = false"
     :maxLen="DECK_MAX_LEN"
   />
+
 </template>
 
 <script setup>

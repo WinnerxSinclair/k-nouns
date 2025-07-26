@@ -62,6 +62,7 @@ watch(() => props.card, () => {
   showExplanation.value = false;
   if(props.card?.explanation){
     const rawHtml = marked.parse(props.card.explanation);
+    console.log(rawHtml);
     markedExplanation.value = DOMPurify.sanitize(rawHtml);
   }
   if(props.card){

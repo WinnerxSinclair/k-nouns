@@ -76,7 +76,8 @@
             v-model.trim="tagInput" 
             :minLength="TAG_MIN_LEN"
             :maxlength="TAG_MAX_LEN" 
-            :disabled="submitting"          
+            :disabled="submitting"
+            @keydown.enter.prevent="handleAddTagClick(tagInput)"          
           >
           <button class="arrow-btn" type="button" @click="handleAddTagClick(tagInput)" :disabled="submitting">
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ffffffde"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>
@@ -100,19 +101,15 @@
       <FlatButton text="Save Entry" :disabled="savingForm"  />
       
     </form>
-
-
-   
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { translate, explain } from '../api/api.js'
+import { translate, explain, createTag, createCard } from '../api/api.js'
 import { useDeckStore } from '../stores/deckStore.js'
 import { useUserStore } from '../stores/userStore.js'
 import { useToastStore } from '../stores/toastStore.js'
-import { createTag, createCard } from '../api/api.js'
 import { createCardSchema } from '@zod/card.js'
 import { translateSchema, explainSchema } from '@zod/claude.js'
 import { tagSchema } from '@zod/tag.js'
@@ -340,9 +337,8 @@ ul{
   margin: 0;
 }
 form{
-  width: clamp(350px, 50%, 550px);
+  width: clamp(350px, 100%, 62ch);
 }
-
 
 
 </style>

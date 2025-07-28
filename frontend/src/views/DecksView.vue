@@ -130,10 +130,7 @@ const oneExists = computed(() => decks.value.length || tags.value.length);
 onMounted(async () => {
   try{
     countInfo.value = await getDueCounts();
-    console.log(countInfo.value)
-    
-    deckStore.setInitialSelected(countInfo.value.decksWithDueCards, countInfo.value.tagsWithDueCards);
-   
+    deckStore.setInitialSelected(countInfo.value.decksWithDueCards);
     isLoading.value = false;
   }catch(err){
     console.error(err);

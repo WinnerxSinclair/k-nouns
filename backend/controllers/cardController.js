@@ -3,6 +3,7 @@ import Card from "../models/card.js";
 import Deck from "../models/deck.js";
 import User from "../models/user.js";
 import mongoose from 'mongoose'
+import { MAX_DECKS, MAX_TAGS } from "../../shared/constants/zod/validation.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const { startSession } = mongoose
@@ -11,7 +12,8 @@ const { startSession } = mongoose
 const createDeck = asyncHandler(async (req, res) => {
   const uid = req.profile._id;
   const { name } = req.body;
-
+  const current = await Deck.countDocuments({ uid });
+  if(current >= MAX_DECKS) return res.status(403).json({ message: 'Deck cap reached' });
   try{
     const exists = await Deck.exists({ uid, name });
     if(exists){
@@ -237,20 +239,10 @@ const createCard = asyncHandler(async (req, res) => {
 
 });
 
-const getCards = async (req, res) => { //I MIGHT NOT EVEN USE THIS ENDPOINT
-  const { deckId } = req.params;
-  try{
-    const cards = await Card.find({ uid: req.profile._id, deckId: deckId }).lean();
-    res.json(cards);
-  }catch(err){
-    console.error(err);
-    res.status(500).json({ message: 'error getting cards' });
-  }
-}
 
 const getDashboardCards = asyncHandler(async (req, res) => {
   const uid = req.profile._id;
-  const { decks = [], tags = [], conditional = '$in' } = req.body;
+  const { decks = [], tags = [], conditional = '$all' } = req.body;
   if(!decks.length && !tags.length){
     return res.status(400).json({ message: 'no filters' }); 
   }
@@ -479,48 +471,15 @@ const dueCardCounts = asyncHandler(async (req, res) => { //MIGHT NEED TO CHECK I
 
 });
 
-const bulkPatch = asyncHandler( async(req, res) => { //MIGHT NEED TO REDO FOR ZOD
-  const { option, cardIds, pairIds, ...rest } = req.body;
-  if(!cardIds?.length) return res.status(400).json({ error: 'no ids' });
- 
-  const uid = req.profile._id;
-  const filter = { uid, $or: [ { _id: { $in: cardIds } }, { pairId: { $in: pairIds } }] };
-  
-  switch(option){
-    case 'setDue':
-      let dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + Number(rest.due));
-      await Card.updateMany(filter, { $set: { due: dueDate } });
-      break;
-    
-    case 'reset':
-      await Card.updateMany(filter, {
-        $set: { interval: 0, ease: 2.5, reps: 0, lapses: 0, due: new Date() }
-      });
-      break;
 
-    case 'addTag':
-      await Card.updateMany(filter, { $addToSet: { tags: rest.tag } });
-      await User.findByIdAndUpdate(uid, { $addToSet: { tags: rest.tag } })
-      break;
-    
-    case 'removeTag':
-      await Card.updateMany(filter, { $pull: { tags: rest.tag } });
-      break;
-
-    case 'delete':
-      await Card.deleteMany(filter);
-      break;
-
-    default:
-      return res.status(400).json({ error: 'unknown op' });
-  }
-  return res.json({ ok: true });
-});
 
 
 const addTag = asyncHandler(async (req, res) => {
   const uid = req.profile._id;
+
+  const { tags } = await User.findById(uid).select('tags').lean();
+  if(tags.length >= MAX_TAGS) return res.status(403).json({ message: 'Breached tag cap' });
+
   const { tag, cardIds, pairIds } = req.body;
   const filter = { uid, $or: [ { _id: { $in: cardIds } }, { pairId: { $in: pairIds } }] };
   const session = await startSession();
@@ -583,7 +542,6 @@ export default {
   createCard,
   updateCard, 
   getDecks, 
-  getCards, 
   getDeckTags, 
   getDeckById,
   getCardBatch,
@@ -592,7 +550,6 @@ export default {
   getCard,
   updateDeckName,
   getDashboardCards,
-  bulkPatch,
   exportDeck,
   importDeck,
   addTag,

@@ -1,18 +1,21 @@
 import User from '../models/user.js'
 import { asyncHandler } from '../utils/asyncHandler.js';
-
+import { MAX_TAGS } from '../../shared/constants/zod/validation.js';
 const addTag = asyncHandler(async (req, res) => {
+  const uid = req.profile._id;
   const { tagName } = req.body;
+  const { tags } = await User.findById(uid).select('tags').lean();
+  if(tags.length >= MAX_TAGS) return res.status(403).json({ message: 'Breached tag cap' });
+  console.log(tags);
+  await User.findByIdAndUpdate(uid, { $addToSet: { tags: tagName } });
   
-  await User.findByIdAndUpdate(req.profile._id, { $addToSet: { tags: tagName } });
-  
-  res.status(200).json({ message: 'tag created' });
+  res.sendStatus(204);
 
 });
 
 const getTags = asyncHandler(async (req, res) => {
-  
-  const user = await User.findById(req.profile._id).select('tags').lean();
+  const uid = req.profile._id;
+  const user = await User.findById(uid).select('tags').lean();
   const sortedTags = user.tags.sort((a,b) => a.localeCompare(b));
   res.json(sortedTags);
 

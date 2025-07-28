@@ -9,12 +9,13 @@
     <div class="inner">
       <slot />
     </div>
+    <X  @pressed="$emit('close')" />
   </div>
 </template>
 
 <script setup>
 import { onBeforeMount, onBeforeUnmount, onMounted, onUnmounted, useTemplateRef } from 'vue'
-
+import X from './X.vue';
 const emit = defineEmits(['close']);
 const dialog = useTemplateRef('dialog');
 

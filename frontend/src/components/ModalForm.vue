@@ -7,7 +7,7 @@
           <input class="fs-500" v-focus required :type="type" v-model="name" :disabled="lock" :maxlength="maxLen" :max="max" :min="min">
         </div>
         <ErrorRender :errors="errors" />
-        <button class="mt-3" :disabled="lockButton">{{ btnText }}</button>
+        <button class="mt-3 btn-main" :disabled="lockButton">{{ btnText }}</button>
       </form>
     </TheOverlay>
   </ModalTransition>
@@ -60,5 +60,17 @@ form{
   padding: 1.2rem;
   background:white;
   border-radius: 1rem;
+}
+
+.confirm-btn{
+  color: green;
+  border: 1px solid green;
+  background: rgba(189, 252, 164, 0.103);
+}
+.cancel-btn{
+  color: red;
+  border: 1px solid red;
+  background: rgba(247, 173, 173, 0.103);
+  
 }
 </style>

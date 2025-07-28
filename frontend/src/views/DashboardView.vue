@@ -119,10 +119,12 @@
                   </div>
                 </div>
                 <!-- <RouterLink :to="`/deck/${deck._id}`">abc</RouterLink> -->
-                <button 
-                  @click="addToQuery(deck._id, 'decks', $event)" 
+                <button
+                  @keydown.enter.prevent="addToQuery(deck._id, 'decks', $event)" 
+                  @click="addToQuery(deck._id, 'decks', $event)"
+                   
                   class="name-btn"
-                  :class="{ 'selected-query': querySets.decks.has(deck._id)}"
+                  :class="{ 'selected-query-deck': querySets.decks.has(deck._id)}"
                 >
                   {{ deck.name }}
                 </button>
@@ -153,10 +155,11 @@
                     </ul>
                   </div>
                 </div>
-                <button 
+                <button
+                  @keydown.enter.prevent="addToQuery(tag, 'tags', $event)"  
                   @click="addToQuery(tag, 'tags', $event)" 
                   class="name-btn"
-                  :class="{ 'selected-query': querySets.tags.has(tag)}"
+                  :class="{ 'selected-query-tag': querySets.tags.has(tag)}"
                 >
                   {{ tag }}
                 </button>
@@ -299,7 +302,7 @@
                 <button 
                   @click="mobileAddToQuery(deck._id, 'decks')" 
                   class="name-btn"
-                  :class="{ 'selected-query': querySets.decks.has(deck._id)}"
+                  :class="{ 'selected-query-deck': querySets.decks.has(deck._id)}"
                 >
                   {{ deck.name }}
                 </button>
@@ -331,7 +334,7 @@
                 <button 
                   @click="mobileAddToQuery(tag, 'tags')" 
                   class="name-btn"
-                  :class="{ 'selected-query': querySets.tags.has(tag)}"
+                  :class="{ 'selected-query-tag': querySets.tags.has(tag)}"
                 >
                   {{ tag }}
                 </button>
@@ -603,7 +606,7 @@ const selectedDecksIdNamePairs = computed(() => {
 const selectedTagsArr = computed(() => {
   return Array.from(querySets.tags);
 })
-const tagMode = ref('$in');
+const tagMode = ref('$all');
 function resetQuerySets(){
   querySets.decks.clear();
   querySets.tags.clear();
@@ -776,10 +779,15 @@ function handleEditRoute(id){
 }
 const newQuery = ref(false);
 function addToQuery(payload, set, e){
+  console.log(e);   
   if(!e.ctrlKey){
     resetQuerySets();
   }
-  querySets[set].add(payload);
+  if(querySets[set].has(payload)){
+    querySets[set].delete(payload);
+  }else{
+    querySets[set].add(payload);
+  }
   newQuery.value = true;
 }
 function removeFromQuery(payload, set){
@@ -1021,6 +1029,16 @@ onUnmounted(() => document.body.removeEventListener('click', handleBodyClick));
 
 
 <style scoped>
+.decks-view-root{
+  --deck-highlight: rgb(253, 208, 124);
+  --tag-highlight: rgb(153, 245, 153);
+  --custom-margin: 3rem;
+  width: clamp(350px, 95%, 1280px);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 .dashboard-heading{
   margin-top: 1.2rem;
   margin-bottom: 1.2rem;
@@ -1057,9 +1075,7 @@ onUnmounted(() => document.body.removeEventListener('click', handleBodyClick));
   text-decoration-color: brown;
   text-decoration-thickness: 3px;
 }
-.selected-query{
-  background: rgb(253, 231, 143);
-}
+
 .import-form{
   background: white;
   padding: 2rem;
@@ -1070,14 +1086,16 @@ onUnmounted(() => document.body.removeEventListener('click', handleBodyClick));
 .query-li > button{
   
 }
-.query-li.decks{
-  background: rgb(253, 208, 124);
+.query-li.decks,
+.selected-query-deck{
+  background: var(--deck-highlight);
 }
 .deck-select{
   width: 250px;
 }
-.query-li.tags{
-  background: rgb(153, 245, 153);
+.query-li.tags,
+.selected-query-tag{
+  background: var(--tag-highlight);
 }
 .deck-tag-controls{
   position: absolute;
@@ -1171,8 +1189,7 @@ td > button{
   align-items: center;
 }
 .deck-name{
-  
-word-wrap: break-word;
+  word-wrap: break-word;
 }
 .deck-name-link{
   width: 100%;
@@ -1190,14 +1207,7 @@ th, td{
 tr:nth-child(even){
   background: #c2c2c21c;
 }
-.decks-view-root{
-  --custom-margin: 3rem;
-  width: clamp(350px, 95%, 1280px);
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
+
 
 ul{
   list-style:none;

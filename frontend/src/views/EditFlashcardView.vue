@@ -1,75 +1,93 @@
 <template>
   <div class="flex edit-card-wrap col ac" v-if="!loading && form">
-    <button class="back-btn">Back (insert arrow)</button>
-    <!-- <div class="flex jfe">
-      
-        <DynamicButton 
-          styles="delete" 
-          type="button" 
-          text="Delete Card" 
-          @pressed="handleCardDelete" 
-        />
-      
-    </div> -->
+    <RouterLink class="back-btn" :to="{path: '/dashboard', replace: true }">
+      <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 0 24 24" width="48px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </RouterLink>
+
     <TheHeader header="Edit Card" />
     <TokenCount :tokenCount="userStore.tokens" />
     <form @submit.prevent="saveEntry" > 
       <TheTextarea 
         v-model="form.context" 
         label="Context" 
-        
+        placeholder="e.g. 22yr old male speaking to younger brother"
+        :maxLength="MAX_LENGTHS.context" 
       />
+      <ErrorRender :errors="errorForm.context" />
 
       <TheTextarea 
         v-model="form.front" 
-        label="English*" 
+        label="English*"
+        :required="true"
+        :maxLength="MAX_LENGTHS.front" 
       />
+      <ErrorRender :errors="errorForm.front" />
 
       <FlatButton
         text="Translate"
         type="button" 
-        :disabled="form.back.length || !form.front.length || translateLoading || !userStore.hasEnough" 
+        :disabled="translateLoading" 
         @pressed="translateClicked" 
       />
+      <ErrorRender :errors="translateErrors.context" />
+      <ErrorRender :errors="translateErrors.front" />
+      
       <TheSpinner v-if="translateLoading" />
 
       <TheTextarea 
         v-model="form.back" 
         label="Korean*"
-        :required="true" 
+        :required="true"
+        :maxLength="MAX_LENGTHS.back" 
       />
+      <ErrorRender :errors="errorForm.back" />
 
       <FlatButton
         text="Explain"
         type="button" 
-        :disabled="form.explanation.length || !form.back.length || explainLoading || !userStore.hasEnough"
+        :disabled="explainLoading"
         @pressed="explainClicked" 
-      /> 
+      />
+      <ErrorRender :errors="explainErrors.back" /> 
       <TheSpinner v-if="explainLoading" />
 
       <TheTextarea 
         v-model="form.explanation" 
-        label="Explanation" 
+        label="Explanation"
+        :maxLength="MAX_LENGTHS.explanation" 
       />
+      <ErrorRender :errors="errorForm.explanation" />
 
-      <TheOverlay v-if="savingForm">
-        <TheSpinner />
-      </TheOverlay>
+      <Teleport to="body">
+        <LockScreen v-if="savingForm">
+          <TheSpinner />
+        </LockScreen>
+      </Teleport>
 
       <div class="mt-3 gap flex">        
         <label for="mirror">{{ form?.pairId ? 'Edit Mirror As Well?' : 'Add Mirror?' }}</label>
         <input id="mirror" type="checkbox" v-model="form.mirror">
       </div>
+      <ErrorRender :errors="errorForm.mirror" />
 
       <section class="flex col gap">
         <div class="flex gap ac mt-3">
-          <label>Tags</label>
-          <input type="text" v-model.trim="tagInput" maxlength="20" :disabled="submitting">
+          <label for="sortOrAddTags">Tags</label>
+          <input 
+            id="sortOrAddTags" 
+            type="text" 
+            v-model.trim="tagInput" 
+            :minLength="TAG_MIN_LEN"
+            :maxlength="TAG_MAX_LEN" 
+            :disabled="submitting"
+            @keydown.enter.prevent="handleAddTagClick(tagInput)"          
+          >
           <button class="arrow-btn" type="button" @click="handleAddTagClick(tagInput)" :disabled="submitting">
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ffffffde"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>
           </button>
         </div>
-
+        <ErrorRender :errors="addTagErrors.tag" />
+        <ErrorRender :errors="errorForm.tags" />
   
         <ul class="flex gap wrap tag-container">
           <li class="tag-btn-wrapper" v-for="tag in filteredTags" :key="tag">
@@ -83,7 +101,7 @@
       </section>
 
       <br>
-      <FlatButton text="Save Entry" :disabled="!form.back.length || !form.front.length" />
+      <FlatButton text="Save Entry" :disabled="savingForm" />
       
     </form>
    
@@ -93,22 +111,41 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { translate, explain, deleteCard, getCard, createTag, updateCard } from '../api/api.js'
+import { translate, explain, getCard, createTag, updateCard } from '../api/api.js'
 import { useDeckStore } from '../stores/deckStore.js'
 import { useUserStore } from '../stores/userStore.js'
-import { useToastStore } from '../stores/toastStore.js' 
+import { useToastStore } from '../stores/toastStore.js'
+import { updateCardSchema } from '@zod/card.js'
+import { translateSchema, explainSchema } from '@zod/claude.js'
+import { tagSchema } from '@zod/tag.js'
+import { validate } from '../helpers/validate.js'
+import { 
+  CONTEXT_MAX_LEN, 
+  FRONT_MAX_LEN, 
+  BACK_MAX_LEN, 
+  EXPLANATION_MAX_LEN,
+  TAG_MAX_LEN,
+  TAG_MIN_LEN,
+  TAG_ARR_MAX_LEN 
+} from '@zodConsts/validation.js' 
 import TheHeader from '../components/TheHeader.vue'
 import TheTextarea from '../components/TheTextarea.vue'
-import TheOverlay from '../components/widgets/TheOverlay.vue'
 import TheSpinner from '../components/widgets/TheSpinner.vue'
 import FlatButton from '../components/buttons/FlatButton.vue'
 import TokenCount from '../components/widgets/TokenCount.vue'
+import ErrorRender from '../components/widgets/ErrorRender.vue'
+import LockScreen from '../components/LockScreen.vue'
 import { useRouter } from 'vue-router'
 const router = useRouter();
 const props = defineProps({
   cardId: String
 });
-
+const MAX_LENGTHS = {
+  context: CONTEXT_MAX_LEN,
+  front: FRONT_MAX_LEN,
+  back: BACK_MAX_LEN,
+  explanation: EXPLANATION_MAX_LEN
+}
 const userStore = useUserStore();
 const deckStore = useDeckStore();
 const toastStore = useToastStore();
@@ -121,7 +158,27 @@ const savingForm = ref(false);
 const errMsg = ref(null);
 const loading = ref(true);
 const tagInput = ref('');
+const errorForm = ref({
+  context: [],
+  front: [],
+  back: [],
+  explanation: [],
+  mirror: [],
+  tags: []
+});
 
+const translateErrors = ref({
+  context: [],
+  front: []
+});
+
+const explainErrors = ref({
+  back: []
+});
+
+const addTagErrors = ref({
+  tag: []
+});
 const tags = ref(new Set());
 
 const normalizedTags = computed(() => 
@@ -141,6 +198,7 @@ const filteredTags = computed(() => {
   )
 });
 const translateClicked = async () => {
+  if(translateLoading.value) return;
   const { front, context } = form.value;
   const body = {
     front, 
@@ -148,9 +206,11 @@ const translateClicked = async () => {
   }
   translateLoading.value = true;
   try{
+    if(!validate(body, translateErrors, translateSchema)) return;
     if(!userStore.hasEnough) return;
     const recheck = await userStore.fetchTokens();
     if(recheck <= 0) return;
+  
     const response = await translate(body);
     const { message, updatedTokenCount } = response;
     form.value.back = message;
@@ -158,7 +218,6 @@ const translateClicked = async () => {
   }catch(err){
     console.error(err)
   }finally{
-    console.log('translate finaly')
     translateLoading.value = false;
   }
 }
@@ -166,19 +225,25 @@ const translateClicked = async () => {
 function prepTags(tag){
   if(tags.value.has(tag)){
     tags.value.delete(tag);
-  }else{
+    return;
+  }
+
+  if(tags.value.size < TAG_ARR_MAX_LEN){
     tags.value.add(tag);
   }
+  
 }
 
 const explainClicked = async () => {
+  if(explainLoading.value) return;
   const { back } = form.value;
   explainLoading.value = true;
   try{
+    if(!validate({ back }, explainErrors, explainSchema)) return;
     if(!userStore.hasEnough) return;
     const recheck = await userStore.fetchTokens();
     if(recheck <= 0) return;
-    const response = await explain({back});
+    const response = await explain({ back });
     const { message, updatedTokenCount } = response;
     form.value.explanation = message;
     userStore.updateTokenCount(updatedTokenCount);
@@ -187,17 +252,15 @@ const explainClicked = async () => {
     console.error(err);
     errMsg.value = 'Something went wrong.'
   }finally{
-    console.log('explain finally')
     explainLoading.value = false;
   }
 }
 
 const handleAddTagClick = async (tag) => {
-  if(!tag.trim()) return;
   if(submitting.value) return;
   submitting.value = true;
-  
   try{
+    if(!validate({ tag }, addTagErrors, tagSchema)) return;
     await createTag({ tagName: tag });
     await deckStore.fetchTags(); //REFETCH???
     tags.value.add(tag);
@@ -211,17 +274,17 @@ const handleAddTagClick = async (tag) => {
 }
 
 const saveEntry = async () => {
+  if(savingForm.value) return;
   savingForm.value = true;
-  if(tags.value.size){
-    form.value.tags = Array.from(tags.value);
-  }
-  let payload = {
-    ...form.value,
-  }
-
   try{
+    if(tags.value.size){
+      form.value.tags = Array.from(tags.value);
+    }
+    let payload = {
+      ...form.value,
+    }
+    if(!validate(payload, errorForm, updateCardSchema)) return;
     await updateCard(props.cardId, payload);
-    // await deckStore.fetchDeckTags(props.id);
     router.replace('/dashboard');
     const toastMsg = 'Card Edited';
     toastStore.createToast(toastMsg)
@@ -240,14 +303,12 @@ onMounted(async () => {
     await deckStore.fetchTags();
   }
   try{
-    console.log(props.cardId)
     const card = await getCard(props.cardId);
     
     form.value = { 
       ...card,
       mirror: card?.pairId ? true : false 
     };
-    console.log(form.value);
     tags.value = new Set(card.tags);
   }catch(err){
     console.error(err);
@@ -264,12 +325,7 @@ onMounted(async () => {
 
 
 <style scoped>
-/* .edit-card-wrap{
-  z-index: 2;
-  width: 100%;
-  background: rgb(255, 253, 247);
-  min-height: 100vh;
-} */
+
 .back-btn{
   position:absolute;
   top: 10px;
@@ -288,11 +344,7 @@ ul{
   margin: 0;
 }
 form{
-  width: clamp(350px, 50%, 550px);
+  width: clamp(350px, 100%, 62ch);
 }
 
-.tag-container{
-  max-height: 200px;
-  overflow: scroll;
-}
 </style>

@@ -82,6 +82,7 @@ a{
   font-size: 1.2rem;
   padding: .2rem .5rem;
   border-radius: 1rem;
+  user-select: none;
 }
 a:hover{
   background:white;

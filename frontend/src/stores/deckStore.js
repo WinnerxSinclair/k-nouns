@@ -82,9 +82,8 @@ export const useDeckStore = defineStore('deck', () => {
   function deselectAll(name){
     selectedFilters.value[name] = [];
   }
-  function setInitialSelected(deckKeys, tags){
+  function setInitialSelected(deckKeys){
     selectedFilters.value.decks = deckKeys;
-    selectedFilters.value.tags = tags;
   }
 
 

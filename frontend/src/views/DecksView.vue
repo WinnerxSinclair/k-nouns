@@ -18,7 +18,7 @@
         {{ isLoading ? 'Loading...' : 'Study Due Cards' }}
       </RouterLink>
 
-      <p v-if="!oneExists && !isLoading">Nothing Exists, create decks and cards in the Dashboard</p> 
+      <p v-if="!oneExists && !isLoading">Nothing Exists, create decks and cards in the Create tab</p> 
     </div>
     
     <!-- <ContentLoadedTransition>
@@ -59,7 +59,7 @@
               :key="deck._id"
               :class="{'selected': deckStore.selectedDecks.has(deck._id)}"
             >
-              <input 
+              <input
                 type="checkbox" 
                 :value="deck._id" 
                 v-model="deckStore.selectedFilters.decks"
@@ -209,7 +209,6 @@ onMounted(async () => {
 }
 
 input[type="checkbox"]{
-  
   position: absolute;
   width: 1px;
   height: 1px;
@@ -219,6 +218,11 @@ input[type="checkbox"]{
   border: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);
+}
+
+input[type="checkbox"]:focus-visible + .label-row{
+  outline: 2px solid Highlight;
+  outline-offset: 4px;
 }
 
 .decks-view-root{

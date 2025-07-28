@@ -10,7 +10,6 @@ const router = express.Router();
 const d = 'deckId';
 router.post('/', validateBody(createDeckSchema), cardController.createDeck);
 router.post('/:deckId/cards', validateParams(validateMongoId(d)), validateBody(createCardSchema), cardController.createCard);
-router.get('/:deckId/cards', validateParams(validateMongoId(d)), cardController.getCards);
 router.get('/:deckId/tags', validateParams(validateMongoId(d)), cardController.getDeckTags);
 router.get('/:deckId', validateParams(validateMongoId(d)), cardController.getDeckById);
 router.get('/', cardController.getDecks);

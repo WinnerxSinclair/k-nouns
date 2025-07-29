@@ -1,3 +1,4 @@
+import './utils/load-env.js'
 import express from 'express'
 import mongoose from 'mongoose'
 import cookieParser from 'cookie-parser'
@@ -7,7 +8,6 @@ import { v4 as uuid } from 'uuid'
 import { logger } from './logger.js'
 import mongoSanitize from 'express-mongo-sanitize'
 import cors from 'cors'
-import dotenv from 'dotenv'
 import tokenUsageRoutes from './routes/tokenUsageRoutes.js'
 import deckRoutes from './routes/deckRoutes.js'
 import cardRoutes from './routes/cardRoutes.js'
@@ -19,49 +19,17 @@ import shareRoutes from './routes/shareRoutes.js'
 import { authenticateToken, requireVerifiedEmail } from './middleware/authenticateToken.js'
 
 
-dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: /http:\/\/localhost:\d+/,
+  origin: [/http:\/\/localhost:\d+/, 'https://knouns-prod.web.app'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(helmet());
 app.use(mongoSanitize());
-app.get('/login', (req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src  'self'",
-      "style-src   'self'",
-      "connect-src 'self' https://identitytoolkit.googleapis.com",
-      "img-src     'self' data:",
-      "object-src  'none'",
-      "frame-ancestors 'none'",
-    ].join('; ')
-  )
-  // fall through to static file serving
-  next()
-})
-app.get('/register', (req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src  'self'",
-      "style-src   'self'",
-      "connect-src 'self' https://identitytoolkit.googleapis.com",
-      "img-src     'self' data:",
-      "object-src  'none'",
-      "frame-ancestors 'none'",
-    ].join('; ')
-  )
-  // fall through to static file serving
-  next()
-})
+
 
 
 app.use((req, res, next) => {
@@ -89,7 +57,6 @@ app.use((err, _req, res, _next) => {
   console.error(err);        
   res.status(500).json({ message: 'internal server error' });
 });
-
 
 
 

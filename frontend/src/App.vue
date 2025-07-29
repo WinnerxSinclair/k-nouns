@@ -13,10 +13,6 @@
 import { RouterView } from 'vue-router';
 import AppHeader from './components/header/AppHeader.vue';
 import Toast from './components/widgets/Toast.vue';
-
-
-
-
 </script>
 
 <style scoped>

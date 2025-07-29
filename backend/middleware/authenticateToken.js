@@ -10,7 +10,7 @@ export async function authenticateToken(req, res, next) {
 
   const idToken = match[1]
   try {
-    
+  
     const decoded = await admin.auth().verifyIdToken(idToken, true);
 
     req.user = decoded     

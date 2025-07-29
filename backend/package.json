@@ -4,7 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
+    "start": "cross-env NODE_ENV=production node server.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +35,8 @@
     "zod": "^4.0.5"
   },
   "devDependencies": {
+    "cross-env": "^10.0.0",
+    "nodemon": "^3.1.10",
     "supertest": "^7.1.1",
     "vitest": "^3.2.4"
   },

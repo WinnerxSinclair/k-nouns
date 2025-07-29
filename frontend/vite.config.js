@@ -10,5 +10,19 @@ export default defineConfig({
       '@zod': path.resolve(__dirname, '../shared/zodSchemas'),
       '@zodConsts': path.resolve(__dirname, '../shared/constants/zod')
     }
+  },
+  build: {
+    minifiy: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
+  },
+  esbuild: {
+    supported:{
+      'top-level-await': true
+    }
   }
 })

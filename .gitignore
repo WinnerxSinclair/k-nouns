@@ -1,7 +1,7 @@
 # === every ===
-.env
+.env*
 *.log
-logs/
+/logs/
 .DS_Store
 
 # === shared ===
@@ -11,7 +11,7 @@ logs/
 /frontend/dist/
 /frontend/dist-ssr/
 /frontend/*.local
-/frontend/.env
+/frontend/.env*
 
 # VS Code (allow recommended extensions)
 /frontend/.vscode/*
@@ -21,6 +21,7 @@ logs/
 /backend/node_modules/
 /backend/.env
 /backend/dist/
+/backend/.env*
 
 # Editor + IDEs
 .idea/

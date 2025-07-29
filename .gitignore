@@ -3,6 +3,9 @@
 *.log
 /logs/
 .DS_Store
+node_modules
+/node_modules
+node_modules/
 
 # === shared ===
 /shared/node_modules/

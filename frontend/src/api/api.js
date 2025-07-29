@@ -3,7 +3,7 @@ import axios from 'axios';
 import { auth } from '../firebase.js';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/',
+  baseURL: import.meta.env.VITE_URL,
   withCredentials: true
 });
 

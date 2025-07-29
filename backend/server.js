@@ -18,7 +18,7 @@ import tagRoutes from './routes/tagRoutes.js'
 import shareRoutes from './routes/shareRoutes.js'
 import { authenticateToken, requireVerifiedEmail } from './middleware/authenticateToken.js'
 
-
+const PORT = process.env.PORT || 3000;
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -66,7 +66,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 
-app.listen(3000, () => {
+app.listen(PORT, () => {
   console.log('server urnning')
 })
 

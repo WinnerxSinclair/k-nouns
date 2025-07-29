@@ -1,4 +1,5 @@
 {
   "name": "mono-root",
-  "private": true
+  "private": true,
+  "workspace": ["backend", "frontend", "shared"] 
 }

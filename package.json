@@ -1,5 +1,8 @@
 {
   "name": "mono-root",
   "private": true,
-  "workspaces": ["backend", "frontend", "shared"] 
+  "workspaces": ["backend", "frontend", "shared"],
+  "engines": {
+    "node": "22.17.0"
+  } 
 }

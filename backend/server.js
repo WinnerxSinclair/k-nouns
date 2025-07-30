@@ -67,7 +67,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 app.listen(PORT, () => {
-  console.log('server urnning')
+  console.log(`server running on ${PORT}`)
 })
 
 export default app

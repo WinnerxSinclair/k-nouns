@@ -6,6 +6,22 @@ export const useDeckStore = defineStore('deck', () => {
   const deckTags = ref([]);
   const decks = ref([]);
   const deckMap = ref({});
+  const queryConditional = ref('$and');
+  const selectedFilters = ref({
+    decks: [],
+    tags: []
+  });
+
+  function $reset(){
+    tags.value = [];
+    deckTags.value = [];
+    decks.value = [];
+    deckMap.value = {};
+    selectedFilters.value = {
+      decks: [],
+      tags: []
+    }
+  }
 
   function getDeckName(id){
     return deckMap[id];
@@ -25,7 +41,7 @@ export const useDeckStore = defineStore('deck', () => {
 
   const tagNames = computed(() => tags.value.map((tag) => tag.name));
 
-  const queryConditional = ref('$and');
+  
 
   async function fetchDeckById(id){
     try{
@@ -65,10 +81,7 @@ export const useDeckStore = defineStore('deck', () => {
 
 
   //study view
-  const selectedFilters = ref({
-    decks: [],
-    tags: []
-  });
+
   const selectedDecks = computed(() => new Set(selectedFilters.value.decks));
   const selectedTags = computed(() => new Set(selectedFilters.value.tags));
   const somethingSelected = computed(() => selectedFilters.value.decks.length > 0 || 
@@ -113,6 +126,10 @@ export const useDeckStore = defineStore('deck', () => {
     selectAllTags,
     deselectAll,
     setInitialSelected,
+
+
+
+    $reset
   
   } 
 })

@@ -3,6 +3,11 @@ import { ref,computed } from 'vue'
 import { checkTokens } from "../api/api.js";
 export const useUserStore = defineStore('user', () => {
   const tokens = ref(null);
+
+  function $reset(){
+    tokens.value = null;
+  }
+
   const hasEnough = computed(() => tokens.value > 0)
   async function fetchTokens(){
     try{
@@ -22,6 +27,10 @@ export const useUserStore = defineStore('user', () => {
     tokens,
     hasEnough,
     updateTokenCount,
-    fetchTokens
+    fetchTokens,
+
+
+
+    $reset
   }
 });

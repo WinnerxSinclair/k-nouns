@@ -56,10 +56,20 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/authStore.js';
+import { useUserStore } from '../../stores/userStore.js';
+import { useDeckStore } from '../../stores/deckStore.js';
 import { useRoute } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
+
 const authStore = useAuthStore();
+const userStore = useUserStore();
+const deckStore = useDeckStore();
+
+function resetStores(){
+  userStore.$reset();
+  deckStore.$reset();
+}
 
 const mobileMenuToggle = ref(false);
 watch((route), () => {
@@ -68,6 +78,7 @@ watch((route), () => {
 async function handleLogout(){
   try{
     await authStore.logout();
+    resetStores();
     router.push('/login');
   }catch(err){
     console.error(err);

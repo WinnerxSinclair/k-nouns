@@ -11,15 +11,15 @@ export default defineConfig({
       '@zodConsts': path.resolve(__dirname, '../shared/constants/zod')
     }
   },
-  build: {
-    minifiy: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
-  },
+  // build: {
+  //   minifiy: 'terser',
+  //   terserOptions: {
+  //     compress: {
+  //       drop_console: true,
+  //       drop_debugger: true
+  //     }
+  //   }
+  // },
   esbuild: {
     supported:{
       'top-level-await': true

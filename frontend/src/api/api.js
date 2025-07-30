@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { auth } from '../firebase.js';
 
+console.log(import.meta.env.VITE_URL);
 const api = axios.create({
   baseURL: import.meta.env.VITE_URL,
   withCredentials: true

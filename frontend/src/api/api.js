@@ -2,17 +2,19 @@
 import axios from 'axios';
 import { auth } from '../firebase.js';
 
-console.log(import.meta.env.VITE_URL);
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_URL,
+  baseURL: 'https://k-nouns-production.up.railway.app',
   withCredentials: true
 });
 
 // For requests
 api.interceptors.request.use(async (config) => {
   const u = auth.currentUser
+  
   if (u) {
     const token = await u.getIdToken()
+    
     config.headers.Authorization = `Bearer ${token}`
   }
   return config

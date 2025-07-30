@@ -3,6 +3,7 @@ import admin from '../firebaseAdmin.js'
 import User from '../models/user.js'
 export async function authenticateToken(req, res, next) {
   const authHeader = req.headers.authorization || ''
+  console.log(authHeader)
   const match = authHeader.match(/^Bearer (.+)$/)
   if (!match) {
     return res.status(401).json({ message: 'No authentication token provided' })

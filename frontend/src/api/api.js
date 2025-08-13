@@ -4,7 +4,7 @@ import { auth } from '../firebase.js';
 
 
 const api = axios.create({
-  baseURL: 'https://k-nouns-production.up.railway.app',
+  baseURL: import.meta.env.VITE_URL,
   withCredentials: true
 });
 

@@ -1,5 +1,6 @@
 <template>
   <div class="flex col ac">
+
     <div class="fs-500">{{ deckName }}</div>
     <TheHeader header="New Entry" />
     <TokenCount :tokenCount="userStore.tokens" />

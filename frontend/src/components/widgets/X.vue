@@ -1,5 +1,5 @@
 <template>
-  <button class="x" @click="$emit('pressed')"></button>
+  <button aria-label="Close Modal" class="x" @click="$emit('pressed')"></button>
 </template>
 
 <script setup>

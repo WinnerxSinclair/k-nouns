@@ -242,11 +242,13 @@
       <section class="control-section-desktop">
         <h2>Controls</h2>
         <div class="flex col control-wrap gap">
-          <button @click="modals.dueDate = true">Set Due Date</button>
-          <button @click="modals.reset = true">Reset</button>
-          <button @click="modals.addTag = true">Add Tag</button>
-          <button @click="modals.removeTag = true">Remove Tag</button>
-          <button @click="modals.delete = true">Delete</button>
+          <button 
+            v-for="modalInfo in controlModals" 
+            :key="modalInfo.modal"
+            @click="openControlModal(modalInfo.modal)"
+          >
+            {{ modalInfo.text }}
+          </button>
         </div>
       </section>
     </div>
@@ -401,6 +403,8 @@ const route = useRoute();
 const router = useRouter();
 const deckStore = useDeckStore();
 const toastStore = useToastStore();
+
+
 const modals = ref({
   deleteDeck: false,
   editDeckName: false,
@@ -417,6 +421,30 @@ const modals = ref({
   delete: false,
   editCard: false
 });
+
+const controlModals = [
+  {
+    modal: 'dueDate',
+    text: 'Set Due Date',
+  },
+  {
+    modal: 'reset',
+    text: 'Reset'
+  },
+  {
+    modal: 'addTag',
+    text: 'Add Tag',
+  },
+  {
+    modal: 'removeTag',
+    text: 'Remove Tag',
+  },
+  {
+    modal: 'delete',
+    text: 'Delete'
+  }
+]
+
 const deckName = ref('');
 const deckId = ref(null);
 const tag = ref('');
@@ -426,7 +454,7 @@ const cards = ref([]);
 const cardId = ref(null);
 const selectedCards = ref([]); //ids
 const master = useTemplateRef('master');
-const mobileMaster = useTemplateRef('mobileMaster')
+
 const lock = ref(false);
 const showCardTable = ref(false);
 
@@ -467,7 +495,10 @@ watch(selectedCards, () => {
                      selectedCards.value.length < cards.value.length;
 });
 
-
+function openControlModal(modal){
+  if(!selectedCards.value.length) return;
+  modals.value[modal] = true;
+}
 
 function handleMasterSwitch(){
   let checked = master.value.checked;

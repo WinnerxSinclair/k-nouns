@@ -18,7 +18,7 @@ const toastStore = useToastStore();
   padding: .5em;
 }
 .toast-stack{
-  position: absolute;
+  position: fixed;
   top: 1rem;
   left: 1rem;
   z-index: 1000;

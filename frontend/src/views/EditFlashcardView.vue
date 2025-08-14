@@ -319,11 +319,6 @@ onMounted(async () => {
 
 </script>
 
-
-
-
-
-
 <style scoped>
 
 .back-btn{
@@ -345,6 +340,7 @@ ul{
 }
 form{
   width: clamp(350px, 100%, 62ch);
+  width: min(95vw, 62ch);
 }
 
 </style>

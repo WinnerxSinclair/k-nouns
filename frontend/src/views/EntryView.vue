@@ -1,5 +1,5 @@
 <template>
-  <div class="flex col ac">
+  <div class="flex col ac pad">
 
     <div class="fs-500">{{ deckName }}</div>
     <TheHeader header="New Entry" />

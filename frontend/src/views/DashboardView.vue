@@ -88,20 +88,23 @@
         <label for="combine">Combine</label>
         <input id="combine" value="combine" type="radio" name="mobile-query-controls" v-model="mobileRadio">
       </div>
-    </fieldset> 
+    </fieldset>
 
     <div class="filler-margin"></div>
-    
     
     <div class="big-flex">
       <div class="scroll-container" v-if="!isMobile || !showCardTable">
         
         <section v-if="deckStore.decks.length">
-          <h2 >Decks</h2>
+          <h2>Decks</h2>
           <ul class="flex col gap-0">
             <li class="flex ac gap-1" v-for="deck in deckStore.decks" :key="deck._id">
               <div class="rel">                  
-                <button class="flex ac popupBtn pad-0" @click="openMiniEditDeckPopup(deck.name)">
+                <button 
+                  class="flex ac popupBtn pad-0" 
+                  @click="openMiniEditDeckPopup(deck.name)"
+                  :aria-label="deck.name"
+                >
                   <svg class="block" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/><path d="M20,6h-8l-2-2H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16.77c0.68,0,1.23-0.56,1.23-1.23V8C22,6.9,21.1,6,20,6z M20,18L4,18V6h5.17l2,2H20V18z M18,12H6v-2h12V12z M14,16H6v-2h8V16z"/></g></svg>
                 </button>
                 <div class="abs deck-tag-controls editPopup" v-if="selectedDeckEdit === deck.name">
@@ -120,7 +123,6 @@
                   </ul>
                 </div>
               </div>
-              <!-- <RouterLink :to="`/deck/${deck._id}`">abc</RouterLink> -->
               <button
                 @keydown.enter.prevent="addToQuery(deck._id, 'decks', $event)" 
                 @click="addToQuery(deck._id, 'decks', $event)"
@@ -135,11 +137,15 @@
         </section>
             
         <section v-if="deckStore.tags.length">
-          <h2 >Tags</h2>
+          <h2>Tags</h2>
           <ul class="flex col gap-0">
             <li class="flex ac gap-1" v-for="tag in deckStore.tags" :key="tag">
               <div class="rel">                  
-                <button class="flex ac popupBtn pad-0" @click="openMiniEditTagPopup(tag)">
+                <button 
+                  class="flex ac popupBtn pad-0" 
+                  @click="openMiniEditTagPopup(tag)"
+                  :aria-label="tag"
+                >
                   <svg class="block" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="m21.41 11.58-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM13 20.01 4 11V4h7v-.01l9 9-7 7.02z"/><circle cx="6.5" cy="6.5" r="1.5"/></svg>
                 </button>
                 <div class="abs deck-tag-controls editPopup" v-if="selectedTagEdit === tag">
@@ -181,7 +187,7 @@
             <button @click="modals.delete = true">Delete</button>
           </div>
         </section>
-        <ContentLoadedTransition> 
+        
           <table v-if="cards.length">
             <colgroup>
               <col style="width:3rem">      <!-- checkbox -->
@@ -192,7 +198,8 @@
             <thead>
               <tr>
                 <th>
-                  <input ref="master" type="checkbox" @change="handleMasterSwitch">
+                  <label class="sr-hidden" for="master">Master Checkbox</label>
+                  <input id="master" ref="master" type="checkbox" @change="handleMasterSwitch">
                 </th>             
                 <th>Front</th>
                 <th v-if="!isMobile">Back</th>
@@ -200,10 +207,12 @@
               </tr>
             </thead>
             <tbody >
-              <tr v-for="card in cards" :key="card._id">            
+              <tr v-for="(card, i) in cards" :key="card._id">            
                 <td >
                   <div class="flex ac jc">
-                    <input 
+                    <label class="sr-hidden" :for="`card-${i}`">card {{ i }}</label>
+                    <input
+                      :id="`card-${i}`"
                       type="checkbox" 
                       :value="card._id"
                       v-model="selectedCards"
@@ -225,8 +234,9 @@
               </tr>
             </tbody>
           </table>
+          <div class="tac fs-400" v-else>{{ queryStatus }}</div>
           
-        </ContentLoadedTransition>
+        
         
       </section>
       <section class="control-section-desktop">
@@ -609,8 +619,13 @@ function handleEditRoute(id){
   router.push(`/card/${id}`);
   cardId.value = id;
 }
-const newQuery = ref(false);
+const newQuery = ref(true);
 const mobileRadio = ref('single');
+const queryStatus = computed(() => {
+  if(querying.value) return 'Querying...'
+  if(newQuery.value) return 'Awaiting Query';
+  else return 'No Cards';
+});
 
 function addToQuery(payload, set, e){  
   if((!isMobile.value && !e.ctrlKey) || (isMobile.value && mobileRadio.value === 'single')){
@@ -621,10 +636,12 @@ function addToQuery(payload, set, e){
   }else{
     querySets[set].add(payload);
   }
+  cards.value = [];
   newQuery.value = true;
 }
 function removeFromQuery(payload, set){
   querySets[set].delete(payload);
+  cards.value = [];
   newQuery.value = true;
 }
 
@@ -635,6 +652,7 @@ function handleQueryClick(){
 }
 
 const querying = ref(false);
+
 async function somethingChangedLetsFetchCards(){
   if(querying.value) return;
   let deckArr = Array.from(querySets.decks);
@@ -651,9 +669,9 @@ async function somethingChangedLetsFetchCards(){
       tags: tagArr,
       conditional: tagMode.value 
     });
+
     selectedCards.value = [];
     newQuery.value = false;
-    console.log(cards.value)
   }catch(err){
     console.error(err);
   }finally{
@@ -809,7 +827,6 @@ function openMiniEditTagPopup(tag){
 }
 
 function handleBodyClick(e){
-  console.log(e);
   if(e.target.closest('.popupBtn') || e.target.closest('.editPopup')){
     return;
   } 
